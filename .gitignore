@@ -1,0 +1,6 @@
+# ★配布物(package/)は git 管理に置かない。
+#   公開 repo に残すのは「ソースと手順」だけ。board へ配置する一式(バイナリ + launcher +
+#   install.sh + MD5SUMS.txt)は GitHub Release の asset(y7-public-<tag>.tar.gz)として配る。
+#   理由 = bit/xclbin/n.q/host ELF/ko/fw は大きく、履歴に積むと clone が重くなるため。
+#   ディスク上の package/ は作業用に残る(Release tarball を組むときの元)。
+package/

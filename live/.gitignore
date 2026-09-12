@@ -1,0 +1,12 @@
+# build_live.sh の生成物(既定 OUT=./out、中間 .o は out/host_build/)
+out/
+build/
+*.o
+
+# ★推論 host(inference_host/)は 2026-09-08 に一度追跡外 → 2026-09-10 に**追跡へ戻した**。
+#   外した理由 = 開発用の実装そのままの 12,411 行で、Web 配信専用の公開 repo には過大だったため。
+#   戻した理由 = 配信経路だけへ簡素化して 1,483 行(src/y26_live.cpp + include/y26_live.h +
+#   y26_live_recipe.env + geo640.env の 4 ファイル)になり、board 実機で canary GOLD 6/6 の
+#   byte-exact 一致も確認できたため。
+#   ⇒ ここに inference_host の除外行は要らない。ビルド生成物は上の out/ build/ *.o が
+#      inference_host/ 配下にも効くのでそれで足りる。

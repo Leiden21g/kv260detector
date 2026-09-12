@@ -1,0 +1,20 @@
+# MD5SUMS.expect.txt — build_live.sh が出す out/ の期待 md5(2026-09-10 実測)。
+#   ビルド末尾で自動突合する。書式 = "<md5>  <out/ 内のファイル名>  # 注記"。
+#   前提: SDK = PetaLinux 2025.2 common(GCC 13.4.0)/ SOURCE_DATE_EPOCH = recipe の既定値。
+#   ★ここが ✗ になったら、まず「ソース md5 / SDK / フラグ / SOURCE_DATE_EPOCH」のどれが動いたかを見る。
+#
+# board 配備品との関係:
+#   capture_daemon    = board(~/yolov7/capture_daemon)と **byte 一致**
+#   camera_preprocess = board(~/yolov7/camera_preprocess)と **byte 一致**
+#   vcu_stream        = board(~/vcu_stream)と **byte 一致**。★2026-09-10 に差替済:
+#                        旧配備品は静的リンク(f97fca21, 916,056B)で、現 SDK に静的 libc/libstdc++ が無く
+#                        再現できなかった。本動的版(76,680B)へ board を寄せて再現可能にした。
+#                        live 実測 9.92〜9.95fps / canary GOLD 6/6 / HLS セグメント更新を確認済。
+#                        board 上の退避 = ~/vcu_stream.bak_static_20260910(削除するな)。
+#   推論 host         = ✗ 一致しない。board の本番 ELF(c6b433a0)は簡素化前のビルド。
+#                        簡素化 host は board で canary GOLD 6/6 一致を実証済み(別名 yolov7_host_live_simple)。
+
+7a323056f59ccbf2a9b4533818ba0fa7  capture_daemon                              # = board 配備品
+b2a09f41221463c8a6111cb4b6f5860d  camera_preprocess                           # = board 配備品
+01c52c91dbe230c8e1d68aa0f0fc9b2f  vcu_stream                                  # = board 配備品(2026-09-10 差替)
+3f586c9dea5d54435bc9214b26642886  yolov7_host_overlap_camlive_geo640x640_ovl  # 簡素化 host(board 本番は c6b433a0)
