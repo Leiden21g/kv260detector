@@ -2,7 +2,7 @@
 
 カメラ(AP1302)→ 前処理 → PL 推論(YOLO26n、640×640)→ 検出 overlay → VCU H.264 → RTSP → MediaMTX(WebRTC/HLS)
 を board 上で回す **ホスト側プログラム一式のソース**。board へ配置するバイナリ一式は repo には無く、配布アーカイブ
-`y7-public-<tag>.tar.gz`(GitHub Release の asset。★未公開)として配る(`../README.md`「配布物」)。本 dir はその再ビルド用。
+`y7-public-<tag>.tar.gz`(GitHub Release の asset)として配る(`../README.md`「配布物」)。本 dir はその再ビルド用。
 
 ```
 カメラ /dev/video0 ──capture_daemon──▶ /dev/shm/live.nv12(640² NV12、seq 付き atomic 差替)
@@ -90,12 +90,16 @@ SDK=<SDK 展開先> bash build_live.sh all      # → out/(配信 3 本 + host)
 - `camera_preprocess` は `-lopencv_imgproc -lopencv_core` の最小リンク(全 .so リンクは起動 0.66s に劣化)。
 - ★2026-09-10: **決定論ビルド**。推論 host の `__DATE__`/`__TIME__` は `y26_live_recipe.env` の `SOURCE_DATE_EPOCH_DEFAULT` で固定されるので、同じ SDK なら md5 は毎回同じ。期待値は `MD5SUMS.expect.txt`(ビルド末尾で自動突合)。
   `BASE_DEF` のうち生成コードに効くのは幾何/配置の 7 個だけ(実測: 残りを外しても `.text` md5 が一致)。
-  配備 ELF `c6b433a0` は簡素化前(host.cpp 63c7657b / tasks.cpp 98a74755)のもので、簡素化版とはバイナリが違う
+  ★2026-09-12: **配布物の推論 host ELF は本 dir のビルド結果(`3f586c9d`)に統一した**
+  (release 生成時に差し込む = `scripts/package_public_release.sh` §4c)。これで配布バイナリと
+  公開ソースが一致する(AGPL-3.0 の対応ソース)。それ以前に配布/配備していた `c6b433a0` は
+  簡素化前(host.cpp 63c7657b / tasks.cpp 98a74755)のもので、簡素化版とはバイナリが違った
   (**推論結果は board canary で GOLD 一致を確認済**)。
 - 本 dir から再ビルドした配信 3 本(`capture_daemon` 7a323056 / `camera_preprocess` b2a09f41 / `vcu_stream` 01c52c91)は
   **配備品と byte 一致**(2026-09-10 確認。期待 md5 と経緯は `MD5SUMS.expect.txt`。`vcu_stream` は同日に board 側を
-  再現可能な動的リンク版へ差し替えて一致させた)。一致しないのは推論 host だけ(上記、配備 ELF は簡素化前のビルド)。
-  配備品そのものは配布アーカイブに入っている。
+  再現可能な動的リンク版へ差し替えて一致させた)。推論 host も 2026-09-12 に配布物側を本 dir の
+  ビルド結果へ統一したので、**4 本すべてが本 dir から再現できる**(board 実機の ELF を
+  `3f586c9d` へ差し替えるには canary が要る = 別作業)。配備品そのものは配布アーカイブに入っている。
 
 ## 前処理の x86 検証(`preprocess/verify_preprocess_c.py`)
 

@@ -425,7 +425,7 @@ board へ配置する一式(バイナリ + launcher + fan 制御 + `install.sh`)
 `.tar.gz` 1 本の**配布アーカイブ**(GitHub Release の asset)として配る。中身・配置先・版の整合は
 **アーカイブ同梱の `README.md`** にある。以下は PC(WSL)から実行する。
 
-★この asset はまだ公開していない(本節は公開を前提に書いた手順であり、Release からの取得は未検証)。
+★Release ページ: https://github.com/Leiden21g/kv260detector/releases/tag/v1.0
 
 配布アーカイブの名前は `y7-public-<tag>.tar.gz`。`<tag>` には採用ビルドの **xclbin の md5 先頭 8 桁**が入る
 (本書が対象とする採用ビルド = xclbin `14279337` ⇒ `y7-public-14279337.tar.gz`)。
@@ -435,9 +435,9 @@ board へ配置する一式(バイナリ + launcher + fan 制御 + `install.sh`)
 
 ```bash
 # (a) 本 repo の GitHub Release ページから asset と、併記の sha256 を取得して照合し、展開する
-#     (<asset URL> = Release ページに出る tar.gz のリンク)
-curl -LO <asset URL>                            # y7-public-14279337.tar.gz
-sha256sum y7-public-14279337.tar.gz             # Release ページに併記の sha256 と目視で一致すること
+#     asset は Release ページ https://github.com/Leiden21g/kv260detector/releases/tag/v1.0 にある
+curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.0/y7-public-14279337.tar.gz
+sha256sum y7-public-14279337.tar.gz             # 期待: 89605a2938bdeee886ef80b426ecde02198471ab212121d26fcadbb482c8d16d
 tar -xzf y7-public-14279337.tar.gz              # → y7-public-14279337/ (= 以下の <pkg>)
 ```
 
@@ -554,6 +554,9 @@ ssh <user>@<board> 'cd ~ && HOST=./yolov7_host_overlap_camlive_geo640x640_ovl ba
 ssh <user>@<board> 'bash ~/browser_stream_mediamtx.sh'
 ```
 
+`HOST=` は launcher の既定値と同じなので省略できる(2026-09-12 に既定を実在する配備名へ修正した。
+それ以前の版は既定が board に無い名前で、省略すると起動できなかった)。別の ELF を試すときだけ渡す。
+
 - launcher は 7 つの transient unit(capdlive / ppdaemon / probedrain / vcustream / rtspdetect / webmode / yololoop)を
   `systemd-run` で作り約 30 秒で戻る。ログは board の `/tmp/live_rtsp_stream.log`。
 - `browser_stream_mediamtx.sh` が 8 つ目の `mediamtx` unit を作る。**live を畳んで再開したときは毎回打ち直す**
@@ -566,7 +569,7 @@ ssh <user>@<board> 'bash ~/browser_stream_mediamtx.sh'
 | URL | 内容 |
 |---|---|
 | `http://<board>:8889/detect` | ★推奨。WebRTC(遅延 ~1 s、内蔵プレイヤー) |
-| `http://<board>:8890/` | 視聴ページ + 全景/切り抜き + ←↑↓→ pan ボタン |
+| `http://<board>:8890/` | 視聴ページ + 全景/切り抜き + ←↑↓→ pan ボタン。右端に AGPL-3.0 と対応ソースの表示(下記) |
 | `http://<board>:8888/detect` | HLS(遅延 数秒、フォールバック) |
 | `rtsp://<board>:8554/detect` | RTSP(VLC / ffplay) |
 
@@ -606,6 +609,7 @@ ssh <user>@<board> '
 | `GEO640_FPS_CAP` / `GEO640_CAP_FPS` | 8 / 9 | 配信 fps 蓋 / capd 取込 fps。live は推論律速なので蓋を上げても伸びない |
 | `GEO640_GO_FLUSH=cvac`, `GEO640_SNAP_THREADS=2`, `GEO640_GO_EARLY=1` | — | host 側の高速化 gate(GOLD 一致確認済) |
 | `GEO640_CAPD_PUB=1` | — | 取込 3840×2160、publish 640²(全景 = 中央正方 decimate / 切り抜き = 中央 640² crop、:8890 で切替) |
+| `Y7_SOURCE_URL` | (空) | ★**AGPL-3.0 §13**: 視聴ページ(`:8890`)に出す**対応ソースの URL**。配信を第三者にネットワーク越しに使わせる場合、利用者にソースを提供する義務があるため、その在処をページに出す。未設定ならリンクは出ず「AGPL-3.0(対応ソース = 配布物同梱の LICENSE / README 参照)」と表示される。**改変して公開配信するなら、自分の公開先 URL を設定すること**。本 repo をそのまま使うなら `Y7_SOURCE_URL=https://github.com/Leiden21g/kv260detector`、改変して配信するなら**自分の公開先**を設定すること。例: `Y7_SOURCE_URL=https://github.com/Leiden21g/kv260detector bash ~/run_live_rtsp_stream.sh` |
 | `NIMG`(launcher env) | 2000 | 1 起動あたりの枚数。run 境界で host が再起動(~3 s の凍結が 約 3.4 分毎) |
 | `CONF` | 0.25 | 検出しきい値 |
 | `CAM_EXPOSURE/CAM_GAMMA/CAM_SATURATION` | 9 / 12288 / 6144 | AP1302 ISP(逆光対策。exposure は AE モード番号、4〜8 は未定義で使用禁止) |
@@ -624,7 +628,7 @@ ssh <user>@<board> '
 | 2 回目以降の起動で wedge | 前回を mid-run kill した。reboot |
 | `vcu_enc_setup.sh` が「clean base 確認」「direct apply」を出す | configfs 直接 apply(旧 SD 用)の分岐に入っている = `xmutil` が無いか `/lib/firmware/xilinx/yolov7vcu/` が無い。公式 wic なら install.sh をやり直す |
 | `vcu_enc_setup.sh` で kernel Oops(fpga_mgr_load)| 旧 SD の configfs 直接 apply で出た既知事象。reboot せず電源再投入 → dfx-mgr 経路(§3-2)で載せる |
-| `vcu_enc_setup.sh` で insmod 失敗 | kernel が `6.12.40-xilinx-g31626ef92ff1` でない(`dnf upgrade` で上がった等)。同梱 `allegro_dvt.ko` は使えない。再ビルド手順は本公開物に含まれない(VCU platform のビルド環境が要る = 範囲外。配布アーカイブ同梱の `README.md`「バイナリの入手」)。SD を焼き直すのが早い |
+| `vcu_enc_setup.sh` で insmod 失敗 | kernel が `6.12.40-xilinx-g31626ef92ff1` でない(`dnf upgrade` で上がった等)。同梱 `allegro_dvt.ko` は使えない(vermagic 不一致)。SD を焼き直すのが早い。別 kernel 向けに作り直すなら配布アーカイブの `src/allegro-dvt/`(上流の特定 + patch + `build_allegro_dvt.sh`。GPL-2.0 の対応ソース)で再ビルドできるが、その kernel の build tree と aarch64 クロスツールチェインが要る |
 
 ### 3-9. 再ビルド
 

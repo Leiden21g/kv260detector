@@ -1,8 +1,8 @@
 #!/bin/bash
-# run_live_rtsp_stream.sh — [board] fw 86320cdf(BATCH_IN_BASE=165888)+ n.q 64c681d9 で
-#   camera → preprocess → HW 推論(full-HW head, L154 も HW)→ overlay → VCU H.264 → fifo → RTSP。
+# run_live_rtsp_stream.sh — [board] camera → preprocess → HW 推論(full-HW head, L154 も HW)
+#   → overlay → VCU H.264 → fifo → RTSP。
 #   ★1 起動 = N 枚 ping-pong streaming(mid-run refill)= host 再起動コストが消える。
-#   PC 視聴: vlc rtsp://192.168.0.35:8554/detect
+#   PC 視聴: vlc rtsp://<board>:8554/detect  /  ブラウザ: http://<board>:8890/(:8889 を埋め込み)
 #
 # ★仕組み(2026-07-12 実機確定):
 #   - ~~in-host の LIVE_SHM 取込みは壊れている~~ → **2026-07-17b 解決**(真因 = host が camera_preprocess へ
@@ -16,8 +16,11 @@
 #   実証: N=20 で 11-20 枚目も 1 周目と byte-exact 一致 / PL 243.8ms/枚。
 #   (真因と実証の記録は本 script の外に置いてある)
 #
-# 前提: fw 86320cdf + host yolov7_host_n200(STREAM_NIMG=200, 同 BATCH_IN_BASE)、VCU bring-up 済。
+# 前提: 配布物の PL(bit / xclbin)・n.q・推論 host ELF が**セットで一致**していること
+#   (版の正 = 配布アーカイブ同梱の MD5SUMS.txt)、および VCU bring-up 済(vcu_enc_setup.sh)。
 # env: NIMG(1起動の枚数, 既定 400) / DURATION(秒, 既定 1800) / FPS(既定 5) / CONF(既定 0.25)
+#      HOST(推論 host ELF。既定 = 下記)
+#      Y7_SOURCE_URL(視聴ページ :8890 に出す対応ソースの URL。AGPL-3.0 §13。未設定ならリンクを出さない)
 set +e
 # ★ユーザ非依存化(2026-09-06): board ユーザは petalinux でも amd-edf でもよい。実行ユーザの home を基準にする。
 BU="$(id -un)"; BH="/home/$BU"
@@ -35,7 +38,9 @@ FPS="${FPS:-${GEO640_FPS_CAP:-8}}"; CONF="${CONF:-0.25}"; DURATION="${DURATION:-
 #   runbook に手順を書いても、一度きりの中継を仕掛けても、6 時間ごとに同じ穴が開いた。
 #   ⇒ **満了そのものを無くす**のが恒久策。DURATION=<秒> を明示すれば従来どおり有期。
 #   ★停止は従来どおり **stop フラグ経由**(/tmp/lv/stop)。mid-run kill は厳禁のまま。
-HOST="${HOST:-./yolov7_host_n200}"
+# ★既定は配備されている推論 host ELF(2026-09-12 修正。旧既定 ./yolov7_host_n200 は board に無く
+#   env 未指定だと起動できなかった)。別名を置いて試すときは HOST= で上書きする。
+HOST="${HOST:-./yolov7_host_overlap_camlive_geo640x640_ovl}"
 # ── OVERLAY_DEFER(overlap host 専用)──
 #   PHASE3_OVERLAP build の host(*_ovl)では head snapshot + deferred decode で PS 仕事を
 #   PL と重畳し 2.92→5.74fps(2026-07-15 実測)。SERIAL build では無視される(host 側 guard 済)。
@@ -100,8 +105,13 @@ if [ "${GEO640_CAPD_PUB:-0}" = 1 ] && [ "$Y26_NETH" = "$Y26_NETW" ]; then
   CAPTURE_W=3840; CAPTURE_H=2160
   CAPD_PUB_ARGS="--pub-square $Y26_NETW --mode-file /tmp/lv/capmode"
   WEBMODE_ENV="--setenv=CAPMODE=1 --setenv=CAPPAN_MAXX=$(( (CAPTURE_W - Y26_NETW) / 2 )) --setenv=CAPPAN_MAXY=$(( (CAPTURE_H - Y26_NETH) / 2 ))"
+  # ★ここで WEBMODE_ENV を**上書き**するので、Y7_SOURCE_URL の追記はこの if の後で行う(下記)。
   mkdir -p /tmp/lv; [ -s /tmp/lv/capmode ] || echo wide > /tmp/lv/capmode
 fi
+# ★AGPL-3.0 §13(2026-09-12): 視聴ページ(:8890)に対応ソースの URL を出す。
+#   未設定なら web 側はリンクを出さず「同梱 LICENSE 参照」の表示だけになる。
+#   ★capmode 分岐が WEBMODE_ENV を上書きするので、**追記はこの位置**でなければ消える。
+[ -n "${Y7_SOURCE_URL:-}" ] && WEBMODE_ENV="$WEBMODE_ENV --setenv=Y7_SOURCE_URL=$Y7_SOURCE_URL"
 # ★geo640: 配信幾何 = 推論幾何(NETW×NETH)。vcustream/rtspdetect の 640 384 直書きを置換
 WEB_W=$Y26_NETW; WEB_H=$Y26_NETH
 # ── capd の書き出しレート ──
@@ -286,5 +296,7 @@ echo "[yololoop] 終了 it=$it frames=$frames"' >/dev/null 2>&1
 
 sleep 30
 echo "[live] units: capd=$(systemctl is-active capdlive) pp=$(systemctl is-active ppdaemon) vcustream=$(systemctl is-active vcustream) rtsp=$(systemctl is-active rtspdetect) loop=$(systemctl is-active yololoop)"
-echo "[live] RTSP: rtsp://192.168.0.35:8554/detect"
+# ★board 自身のアドレスを出す(2026-09-12: 開発機の固定 IP 直書きをやめた)。
+_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"; : "${_IP:=<board>}"
+echo "[live] RTSP: rtsp://$_IP:8554/detect   Web: http://$_IP:8890/"
 echo "[live] DONE $(date +%T)"

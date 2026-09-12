@@ -1,0 +1,366 @@
+/*
+ * combined_allegro.dtso — 配布している PL overlay `combined_allegro.dtbo` のソース
+ *
+ * 1 枚の overlay で、単一 bitstream(`kv260_fan_vcu.bit.bin`)上の以下をすべて expose する:
+ *   - zocl(`zyxclmm_drm`) … 推論 kernel の XRT device。これが無いと host が
+ *                            "No such device index 0" で動かない
+ *   - probe(`axi_intc@80000000` / `axi_fifo_mm_s@80010000`) … per-layer cyclestamp 読み出し
+ *   - camera(`i2c@80030000` + mux + AP1302 `isp@3c` / `csiss@80020000` /
+ *            `fb_wr@80040000` / `isp_vcap_csi`) … MIPI CSI-2 取り込み
+ *   - VCU(`vcu@80140000` + `al5e@80109000` + `vcu_settings@80141000` syscon) … H.264 encode
+ *
+ * ★encoder node は mainline の allegro-dvt driver 向けの binding にしてある:
+ *     compatible      = "allegro,al5e-1.1"
+ *     reg / reg-names = regs(0x80109000) + sram(0x80100000)
+ *     clock-names     = "core_clk", "mcu_clk"
+ *     assigned-clock-rates = <667000000 444000000>
+ *     xlnx,vcu-settings = <&vcu_settings>   (syscon。無いと allegro_runtime_resume が
+ *                                            ERR_PTR を regmap_read して oops する)
+ *   driver 側のソースと patch は ../allegro-dvt/ を参照。
+ *
+ * ビルド(配布 dtbo を byte-exact に再生成する):
+ *     dtc -@ -I dts -O dtb -o combined_allegro.dtbo combined_allegro.dtso
+ *   期待値: md5 9dd5895218d5295bced3c17cf9439a3b / 11,257 バイト(DTC 1.6.1 で確認)
+ *
+ * board への配置: `install.sh` が /lib/firmware/ と
+ *   /lib/firmware/xilinx/yolov7vcu/yolov7vcu.dtbo(dfx-mgr 用)へ置く。
+ *   ★dtbo を差し替えたら reboot が必要(setup.md §3-2)。
+ *
+ * ライセンス: 本ファイルは本プロジェクトの著作物(AGPL-3.0)。
+ *   ../../LICENSE / ../../THIRD_PARTY_NOTICES.md §5 を参照。
+ */
+
+/dts-v1/;
+/plugin/;
+
+/* ---- fragment@0: fpga-region(PL config + fabric clocks + zocl kernel) ---- */
+&fpga_full {
+	firmware-name = "kv260_fan_vcu.bit.bin";
+	resets = <&zynqmp_reset 0x74>;
+
+	clocking0: clocking0 {
+		#clock-cells = <0x00>;
+		compatible = "xlnx,fclk";
+		clock-output-names = "fabric_clk";
+		assigned-clock-rates = <0x5f5e119>;
+		assigned-clocks = <&zynqmp_clk 0x47>;
+		clocks = <&zynqmp_clk 0x47>;
+	};
+
+	clocking1: clocking1 {
+		#clock-cells = <0x00>;
+		compatible = "xlnx,fclk";
+		clock-output-names = "fabric_clk";
+		assigned-clock-rates = <0x5f5e119>;
+		assigned-clocks = <&zynqmp_clk 0x48>;
+		clocks = <&zynqmp_clk 0x48>;
+	};
+
+	afi0: afi0 {
+		compatible = "xlnx,afi-fpga";
+		config-afi = <0x00 0x00 0x01 0x00 0x02 0x00 0x03 0x00 0x04 0x00 0x05 0x00 0x06 0x00 0x07 0x00 0x08 0x00 0x09 0x00 0x0a 0x00 0x0b 0x00 0x0c 0x00 0x0d 0x00 0x0e 0xa00 0x0f 0x00>;
+		resets = <&zynqmp_reset 0x74 &zynqmp_reset 0x75 &zynqmp_reset 0x76 &zynqmp_reset 0x77>;
+	};
+
+	misc_clk_0: misc_clk_0 {
+		#clock-cells = <0x00>;
+		compatible = "fixed-factor-clock";
+		clock-div = <0x01>;
+		clock-mult = <0x02>;
+		clocks = <&zynqmp_clk 0x47>;
+	};
+
+	cap_clk_200M: cap_clk_200M {
+		#clock-cells = <0x00>;
+		compatible = "fixed-clock";
+		clock-frequency = <0xbebc200>;
+	};
+
+	zyxclmm_drm {
+		compatible = "xlnx,zocl";
+		interrupts-extended = <&axi_intc 0x00 0x04 &axi_intc 0x01 0x04 &axi_intc 0x02 0x04 &axi_intc 0x03 0x04
+			&axi_intc 0x04 0x04 &axi_intc 0x05 0x04 &axi_intc 0x06 0x04 &axi_intc 0x07 0x04
+			&axi_intc 0x08 0x04 &axi_intc 0x09 0x04 &axi_intc 0x0a 0x04 &axi_intc 0x0b 0x04
+			&axi_intc 0x0c 0x04 &axi_intc 0x0d 0x04 &axi_intc 0x0e 0x04 &axi_intc 0x0f 0x04
+			&axi_intc 0x10 0x04 &axi_intc 0x11 0x04 &axi_intc 0x12 0x04 &axi_intc 0x13 0x04
+			&axi_intc 0x14 0x04 &axi_intc 0x15 0x04 &axi_intc 0x16 0x04 &axi_intc 0x17 0x04
+			&axi_intc 0x18 0x04 &axi_intc 0x19 0x04 &axi_intc 0x1a 0x04 &axi_intc 0x1b 0x04
+			&axi_intc 0x1c 0x04 &axi_intc 0x1d 0x04 &axi_intc 0x1e 0x04 &axi_intc 0x1f 0x04>;
+	};
+};
+
+/* ---- fragment@1: amba(probe / camera / VCU MMIO) ---- */
+&amba {
+	#address-cells = <0x02>;
+	#size-cells = <0x02>;
+
+	/* --- probe: axi_intc(zocl 32 IRQ cascade)+ axis_fifo(per-stage probe drain) --- */
+	axi_intc: interrupt-controller@80000000 {
+		#interrupt-cells = <0x02>;
+		compatible = "xlnx,axi-intc-4.1", "xlnx,xps-intc-1.00.a";
+		interrupt-controller;
+		interrupt-names = "irq";
+		interrupt-parent = <&gic>;
+		interrupts = <0x00 0x59 0x04>;
+		reg = <0x00 0x80000000 0x00 0x10000>;
+		clock-names = "s_axi_aclk";
+		clocks = <&misc_clk_0>;
+		xlnx,kind-of-intr = <0x01>;
+		xlnx,num-intr-inputs = <0x20>;
+	};
+
+	probe_fifo: axi_fifo_mm_s@80010000 {
+		interrupt-parent = <&gic>;
+		interrupts = <0x00 0x5a 0x04>;
+		compatible = "xlnx,axi-fifo-mm-s-4.3";
+		reg = <0x00 0x80010000 0x00 0x10000>;
+		clock-names = "s_axi_aclk";
+		clocks = <&misc_clk_0>;
+		xlnx,axi-str-rxd-protocol = "XIL_AXI_STREAM_ETH_DATA";
+		xlnx,axi-str-rxd-tdata-width = <0x20>;
+		xlnx,axi-str-txc-protocol = "XIL_AXI_STREAM_ETH_CTRL";
+		xlnx,axi-str-txc-tdata-width = <0x20>;
+		xlnx,axi-str-txd-protocol = "XIL_AXI_STREAM_ETH_DATA";
+		xlnx,axi-str-txd-tdata-width = <0x20>;
+		xlnx,axis-tdest-width = <0x04>;
+		xlnx,axis-tid-width = <0x04>;
+		xlnx,axis-tuser-width = <0x04>;
+		xlnx,data-interface-type = <0x00>;
+		xlnx,has-axis-tdest = <0x00>;
+		xlnx,has-axis-tid = <0x00>;
+		xlnx,has-axis-tkeep = <0x01>;
+		xlnx,has-axis-tstrb = <0x01>;
+		xlnx,has-axis-tuser = <0x00>;
+		xlnx,rx-cascade-height = <0x00>;
+		xlnx,rx-enable-ecc = <0x00>;
+		xlnx,rx-fifo-depth = <0x200>;
+		xlnx,rx-fifo-pe-threshold = <0x05>;
+		xlnx,rx-fifo-pf-threshold = <0x1fb>;
+		xlnx,rx-has-ecc-err-inject = <0x00>;
+		xlnx,s-axi-id-width = <0x04>;
+		xlnx,s-axi4-data-width = <0x20>;
+		xlnx,select-xpm = <0x00>;
+		xlnx,tx-cascade-height = <0x00>;
+		xlnx,tx-enable-ecc = <0x00>;
+		xlnx,tx-fifo-depth = <0x200>;
+		xlnx,tx-fifo-pe-threshold = <0x05>;
+		xlnx,tx-fifo-pf-threshold = <0x1fb>;
+		xlnx,tx-has-ecc-err-inject = <0x00>;
+		xlnx,use-rx-cut-through = <0x00>;
+		xlnx,use-rx-data = <0x01>;
+		xlnx,use-tx-ctrl = <0x00>;
+		xlnx,use-tx-cut-through = <0x00>;
+		xlnx,use-tx-data = <0x00>;
+	};
+
+	/* --- camera: ap1302 regulators / i2c+isp / csiss / frmbuf / isp_vcap --- */
+	ap1302_vdd: regulator-ap1302-vdd {
+		compatible = "regulator-fixed";
+		regulator-name = "ap1302_vdd";
+		regulator-min-microvolt = <0x2ab980>;
+		regulator-max-microvolt = <0x2ab980>;
+		enable-active-high;
+	};
+
+	ap1302_vaa: regulator-ap1302-vaa {
+		compatible = "regulator-fixed";
+		regulator-name = "ap1302_vaa";
+		regulator-min-microvolt = <0x1b7740>;
+		regulator-max-microvolt = <0x1b7740>;
+	};
+
+	ap1302_vddio: regulator-ap1302-vddio {
+		compatible = "regulator-fixed";
+		regulator-name = "ap1302_vddio";
+		regulator-min-microvolt = <0x124f80>;
+		regulator-max-microvolt = <0x124f80>;
+	};
+
+	cap_iic: i2c@80030000 {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		compatible = "xlnx,axi-iic-2.0", "xlnx,xps-iic-2.00.a";
+		reg = <0x00 0x80030000 0x00 0x10000>;
+		interrupt-parent = <&gic>;
+		interrupts = <0x00 0x5d 0x04>;
+		interrupt-names = "iic2intc_irpt";
+		clocks = <&cap_clk_200M>;
+		clock-names = "s_axi_aclk";
+
+		i2c-mux@74 {
+			compatible = "nxp,pca9546";
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			reg = <0x74>;
+
+			i2c@0 {
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+				reg = <0x00>;
+
+				isp@3c {
+					compatible = "onnn,ap1302";
+					reg = <0x3c>;
+					#address-cells = <0x01>;
+					#size-cells = <0x00>;
+					clocks = <&si5332_2>;
+					reset-gpios = <&gpio 0x4f 0x01>;
+
+					sensors {
+						#address-cells = <0x01>;
+						#size-cells = <0x00>;
+						onnn,model = "onnn,ar1335";
+
+						sensor@0 {
+							reg = <0x00>;
+							vdd-supply = <&ap1302_vdd>;
+							vaa-supply = <&ap1302_vaa>;
+							vddio-supply = <&ap1302_vddio>;
+						};
+					};
+
+					ports {
+						#address-cells = <0x01>;
+						#size-cells = <0x00>;
+
+						port@0 {
+							reg = <0x02>;
+
+							ap1302_out: endpoint {
+								remote-endpoint = <&csiss_in>;
+								data-lanes = <0x01 0x02 0x03 0x04>;
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+
+	cap_csiss: csiss@80020000 {
+		compatible = "xlnx,mipi-csi2-rx-subsystem-5.0";
+		reg = <0x00 0x80020000 0x00 0x2000>;
+		interrupt-parent = <&gic>;
+		interrupts = <0x00 0x5b 0x04>;
+		clocks = <&cap_clk_200M &cap_clk_200M &cap_clk_200M>;
+		clock-names = "lite_aclk", "dphy_clk_200M", "video_aclk";
+		xlnx,csi-pxl-format = <0x18>;
+		xlnx,axis-tdata-width = <0x20>;
+		xlnx,max-lanes = <0x04>;
+		xlnx,en-active-lanes;
+		xlnx,ppc = <0x02>;
+		xlnx,vfb;
+
+		ports {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+
+			port@0 {
+				reg = <0x00>;
+
+				csiss_in: endpoint {
+					data-lanes = <0x01 0x02 0x03 0x04>;
+					remote-endpoint = <&ap1302_out>;
+				};
+			};
+
+			port@1 {
+				reg = <0x01>;
+
+				csiss_out: endpoint {
+					remote-endpoint = <&fb_in>;
+				};
+			};
+		};
+	};
+
+	cap_fb_wr: fb_wr@80040000 {
+		compatible = "xlnx,axi-frmbuf-wr-v2.1";
+		reg = <0x00 0x80040000 0x00 0x10000>;
+		interrupt-parent = <&gic>;
+		interrupts = <0x00 0x5c 0x04>;
+		#dma-cells = <0x01>;
+		xlnx,vid-formats = "nv12";
+		reset-gpios = <&gpio 0x4e 0x01>;
+		xlnx,dma-addr-width = <0x20>;
+		xlnx,pixels-per-clock = <0x02>;
+		xlnx,max-width = <0xf00>;
+		xlnx,max-height = <0x870>;
+		clocks = <&cap_clk_200M>;
+		clock-names = "ap_clk";
+	};
+
+	cap_vcap: isp_vcap_csi {
+		compatible = "xlnx,video";
+		dmas = <&cap_fb_wr 0x00>;
+		dma-names = "port0";
+
+		ports {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+
+			port@0 {
+				reg = <0x00>;
+				direction = "input";
+
+				fb_in: endpoint {
+					remote-endpoint = <&csiss_out>;
+				};
+			};
+		};
+	};
+
+	/* --- VCU(HW H.264/H.265 enc)= build/vcu_build/deploy_resetfix/vcu.dtbo(9486176a)--- */
+	vcu_aclk_200M: vcu_aclk_200M {
+		#clock-cells = <0x00>;
+		compatible = "fixed-clock";
+		clock-frequency = <0xbebc200>;
+	};
+
+	vcu_pll_ref: vcu_pll_ref {
+		#clock-cells = <0x00>;
+		compatible = "fixed-clock";
+		clock-frequency = <0x1fca055>;
+	};
+
+	/* ★xlnx,vcu-settings syscon = logicore(0x80141000)。allegro-dvt の runtime_resume が
+	 * ここから VCU_CORE_CLK(667)/VCU_MCU_CLK(444)を読んで clk_set_rate+enable する。
+	 * 無いと dev->settings=ERR_PTR で regmap_read crash(driver は !NULL しか check せず)。
+	 * xlnx_vcu も logicore を syscon 経由で読む(direct fallback を回避)。 */
+	vcu_settings: vcu_settings@80141000 {
+		compatible = "xlnx,vcu-settings", "syscon";
+		reg = <0x00 0x80141000 0x00 0x1000>;
+	};
+
+	vcu: vcu@80140000 {
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		#clock-cells = <0x01>;
+		compatible = "xlnx,vcu-1.2", "xlnx,vcu", "simple-mfd";
+		reg = <0x00 0x80140000 0x00 0x1000 0x00 0x80141000 0x00 0x1000>;
+		reg-names = "vcu_slcr", "logicore";
+		clocks = <&vcu_pll_ref &vcu_aclk_200M>;
+		clock-names = "pll_ref", "aclk";
+		/* ★venc_core/mcu clock を実 rate へ(667/444MHz)= mux/div 未設定 rate=0 対策。
+		 * allegro-dvt が MCU boot する為に running clock が必須。 */
+		assigned-clocks = <&vcu 0x00 &vcu 0x01>;
+		assigned-clock-rates = <667000000 444000000>;
+		ranges;
+
+		/* ★encoder binding = proprietary(9486176a と同一)。Path C 採用時は
+		 * compatible="allegro,al5e-1.1" + clock-names を allegro-dvt.ko 要求名へ差替
+		 * ([[vcu_encoder_driver_decision_20260704.md]] §4)。 */
+		/* ★allegro-dvt(mainline V4L2)版: regs/sram split + core_clk/mcu_clk。
+		 * sram=base(0x9000)/regs=base+0x9000(0x1000)= VCU lite base 0x80100000 の IP 内部 offset
+		 * (slcr=base+0x40000=0x80140000 で確定)。allegro.ko(cross-build)が bind → /dev/videoN。 */
+		encoder: al5e@80109000 {
+			compatible = "allegro,al5e-1.1";
+			reg = <0x00 0x80109000 0x00 0x1000 0x00 0x80100000 0x00 0x9000>;
+			reg-names = "regs", "sram";
+			interrupt-parent = <&gic>;
+			interrupts = <0x00 0x5e 0x04>;
+			clocks = <&vcu 0x00 &vcu 0x01>;
+			clock-names = "core_clk", "mcu_clk";
+		};
+	};
+};

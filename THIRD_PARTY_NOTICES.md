@@ -1,10 +1,10 @@
 # 第三者物の告知(THIRD_PARTY_NOTICES)
 
 本 repo の**自作部分**は GNU Affero General Public License v3.0(AGPL-3.0)で公開する(全文 = [LICENSE](LICENSE))。
-本書は、本 repo が**同梱する**、または**配布バイナリ(GitHub Release asset として配布予定)に含む/前提とする**第三者物の一覧である。
+本書は、本 repo が**同梱する**、または**配布バイナリ(GitHub Release asset)に含む/前提とする**第三者物の一覧である。
 第三者物にはそれぞれのライセンスが適用され、本 repo の AGPL-3.0 はそれらを上書きしない。
 
-**本書に出てくる `package/…` は、配布アーカイブ `y7-public-<tag>.tar.gz`(GitHub Release の asset。★未公開)を
+**本書に出てくる `package/…` は、配布アーカイブ `y7-public-<tag>.tar.gz`(GitHub Release の asset)を
 展開した中のパス**であり、repo にはそれらのファイルは含まれない([README.md](README.md)「配布物」)。
 
 **表記**
@@ -19,11 +19,11 @@
 
 | # | 物 | 本 repo での扱い | ライセンス | 状態 |
 |---|---|---|---|---|
-| 1 | Ultralytics YOLO26n の重み → `n.q` ほか重み派生ファイル | 配布バイナリ(Release asset 予定) | AGPL-3.0(Ultralytics) | 出所・ライセンスは確認済 / 対応ソースの範囲は要確認 |
-| 2 | `allegro_dvt.ko`(Allegro DVT VCU エンコーダ driver、patch 適用ビルド) | 配布バイナリ(Release asset 予定) | GPL-2.0 | 出所・patch は確認済 / 対応ソースの提供方法は要決定 |
-| 3 | `al5e.fw` / `al5e_b.fw`(VCU microcode v2019.2) | 配布バイナリ(Release asset 予定) | Allegro DVT2 の許諾(MIT 型 + 使用先制限) | 確認済 |
-| 4 | PL bitstream `kv260_fan_vcu.bit.bin` / xclbin `binary_container_1.bin` | 配布バイナリ(Release asset 予定) | **本プロジェクトの著作物 = 独自条件(AGPL-3.0 ではない)** + AMD(Xilinx)IP の生成物 | ★**決定済(2026-09-12)**: 重み非含有・Ultralytics 由来コード無しを確認済、独自条件で配布 / **AMD IP の再配布条件のみ要確認** |
-| 5 | `combined_allegro.dtbo`(PL overlay) | 配布バイナリ(Release asset 予定) | 自作(AMD ツール生成 DT を元に再構成) | 要確認(ソースが本 repo に無い) |
+| 1 | Ultralytics YOLO26n の重み → `n.q` ほか重み派生ファイル | 配布バイナリ(Release asset) | AGPL-3.0(Ultralytics) | ★**決定済(2026-09-12)**: 対応ソース = `.pt` → `n.q` 変換ツールを同梱 = [src/nq/](src/nq/)。配布 `n.q`(md5 `3a83aeb5`)の byte-exact 再生成を確認済 |
+| 2 | `allegro_dvt.ko`(Allegro DVT VCU エンコーダ driver、patch 適用ビルド) | 配布バイナリ(Release asset) | GPL-2.0 | ★**決定済(2026-09-12)**: 案 A を実施 — 対応ソース = [src/allegro-dvt/](src/allegro-dvt/) + 別 asset の source tarball |
+| 3 | `al5e.fw` / `al5e_b.fw`(VCU microcode v2019.2) | 配布バイナリ(Release asset) | Allegro DVT2 の許諾(MIT 型 + 使用先制限) | 確認済 |
+| 4 | PL bitstream `kv260_fan_vcu.bit.bin` / xclbin `binary_container_1.bin` | 配布バイナリ(Release asset) | **本プロジェクトの著作物 = 独自条件(AGPL-3.0 ではない)** + AMD(Xilinx)IP の生成物 | ★**決定済(2026-09-12)**: 重み非含有・Ultralytics 由来コード無しを確認済、独自条件で配布。**AMD IP の再配布条件も EULA 原文で確認済**(§4-5。§3(a)(3)C が bitstream 形式での配布を明文で許す。残る論点 4 つは同節末尾) |
+| 5 | `combined_allegro.dtbo`(PL overlay) | 配布バイナリ(Release asset) | 自作 = AGPL-3.0(AMD ツール生成 DT を元に再構成) | ★**決定済(2026-09-12)**: ソース同梱 = [src/dtbo/](src/dtbo/)。`dtc` で byte-exact 再生成を確認済 |
 | 6 | MediaMTX v1.19.2 | **同梱しない**(上流から取得) | MIT | 確認済 |
 | 7 | XRT 2.20.0 | 同梱しない(board に dnf 導入)。推論 host がヘッダを include し動的リンク | Apache-2.0(user space) | 確認済 |
 | 8 | OpenCV / GStreamer / gst-rtsp-server / PyGObject / Python ほか | 同梱しない(board に dnf 導入) | 各上流(下記) | 参照のみ |
@@ -40,7 +40,7 @@
   上記 release asset の digest と一致する。
 - **本 repo の派生物**: `package/home/yolov7/data26_live/n.q`、`package/home/yolov7/data26_640/` の `n.q`・`p5cls_w.bin`・
   `w_psa_pe_*.bin`・`data_shift_y26_640.txt`。いずれも上記の重みを本 PL 向けに**量子化・再配置したもの**(= 派生物)。
-  git では追跡しておらず、Release asset として配布する予定。
+  git では追跡しておらず、Release asset として配布している。
 - **ライセンス**: Ultralytics のコードと学習済みモデルは **AGPL-3.0**(Ultralytics の表記。確認済: ultralytics 8.4.56 の
   配布物の `License: AGPL-3.0` と同梱 LICENSE。本 repo の [LICENSE](LICENSE) はその LICENSE とバイト一致する GNU 公式全文)。
   (見解)`n.q` 等は AGPL-3.0 の重みの派生物なので、AGPL-3.0 で配布する。
@@ -52,9 +52,15 @@
 - **推論後処理**: `live/inference_host/` の head decode / letterbox(パディング色 114 など)は、Ultralytics の仕様に
   出力を合わせた独自実装。Ultralytics のソースコードをコピーした箇所は、grep の範囲では見つかっていない(確認済: 著作権表記・
   SPDX・上流由来の記述の検索で該当なし)。
-- **要確認**: AGPL-3.0 の「対応ソース(Corresponding Source)」は「改変に適した形式」を要求する。`n.q` の場合、それが
-  元の `.pt`(上流で入手可能)に加えて、**`.pt` → `n.q` の変換ツール**まで含むかは、本 repo では未整理。変換ツールは
-  本 repo に**含まれていない**(見解: 含めるか、少なくとも変換手順を示すのが安全)。
+- **対応ソース**: ★**決定済(2026-09-12)**。AGPL-3.0 の「対応ソース(Corresponding Source)」は「改変に適した形式」を
+  要求する。`n.q` については、元の `.pt`(上流で入手可能)に加えて **`.pt` → `n.q` の変換ツールまで同梱する**
+  ことにした = [src/nq/](src/nq/)(生成器の全ソース + 量子化 sidecar `data_shift_y26_640.txt`)。
+  HLS kernel ソースは含まない(§4 のとおり bit/xclbin は AGPL 対象外)。依存は C++17 のみで、torch / ultralytics /
+  OpenCV / OpenCL は不要。**確認済**: クリーンな環境で cmake ビルド → 実行し、配布 `n.q`
+  (md5 `3a83aeb5d10ec13130998904dfee7732`、5,506,816 バイト)を `cmp` 差分 0 = **byte-exact に再生成できる**
+  (再現条件と手順は [src/nq/README.md](src/nq/README.md))。
+  ★sidecar `data_shift_y26_640.txt` 自体を作り直すキャリブレーション Python(torch + ultralytics 必要)は
+  同梱していない。sidecar はその出力として固定入力の形で同梱してある。
 
 ## 2. `allegro_dvt.ko`(VCU H.264 エンコーダ driver)
 
@@ -62,13 +68,12 @@
   sha256 `080cf20f6d823aceb3f836463ae015b10dc5dffa79dd5fe056902460880ce62d`、104,992 バイト。
   ```
   description:    Allegro DVT encoder driver
-  author:         (Pengutronix)
+  author:         Michael Tretter <kernel@pengutronix.de>
   license:        GPL
   alias:          of:N*T*Callegro,al5e-1.1
   name:           allegro
   vermagic:       6.12.40-xilinx-g31626ef92ff1 SMP mod_unload aarch64
   ```
-  (`author` の実際の表記は上流ソースのヘッダを参照)
 - **上流**: Linux kernel mainline の `drivers/media/platform/allegro-dvt/`(Pengutronix 作)。本 ko は **AMD(Xilinx)の
   kernel tree `linux-xlnx` のコミット `31626ef92ff1`**(board の kernel `6.12.40-xilinx-g31626ef92ff1` と同じコミット)の
   同 dir から、次の 10 ファイルを取得してビルドしたもの:
@@ -87,23 +92,35 @@
   +		return -ENODEV;
    	err = regmap_read(settings, VCU_NUM_CORE, &num_cores);
   ```
-  確認済: 上流 `31626ef92ff1` の `allegro-core.c` にこの分岐は無い(= 本 repo 側の変更)。ビルドは開発環境の
-  ビルドスクリプト(上記 10 ファイルの取得 → patch 適用 → board kernel の build tree で `modules_prepare` →
-  `UTS_RELEASE` を board の vermagic に固定 → `make M=... CONFIG_VIDEO_ALLEGRO_DVT=m modules`)で行った。
+  確認済: 上流 `31626ef92ff1` の `allegro-core.c` にこの分岐は無い(= 本 repo 側の変更)。ビルドは
+  [src/allegro-dvt/build_allegro_dvt.sh](src/allegro-dvt/build_allegro_dvt.sh) と同じ手順(上記 10 ファイルの取得 →
+  patch 適用 → board kernel の build tree で `modules_prepare` → `UTS_RELEASE` を board の vermagic に固定 →
+  `make M=... CONFIG_VIDEO_ALLEGRO_DVT=m modules`)で行った。
   ko のバイナリから patch の有無は直接は読めない(配布 ko が patch 版であることはビルド記録と board 実機動作に基づく)。
 - **ライセンス**: GPL-2.0(only)。本 repo の AGPL-3.0 は**この ko には適用されない**。
   (見解)ko は独立したカーネルモジュールで、本 repo の他の部分とは別プログラムとして同梱する「集合物(aggregate)」扱い。
 - **義務(見解)**: GPL-2.0 のバイナリを配布する者は、**対応する完全なソース**(上記 10 ファイル + patch + ビルドに使った
   スクリプト)を、バイナリに添えるか、書面の申し出(3 年間有効)で提供する必要がある(GPL-2.0 §3)。
   上流 URL を示すだけでは §3 の要件を満たすかが曖昧(見解)。
-- **提供方法の案(要決定)**:
-  - **案 A(推奨)**: ko を載せる同じ GitHub Release に、**ソース tarball**(上記 10 ファイル @ `31626ef92ff1` +
-    patch 適用済みの `allegro-core.c` と patch 単体 + ビルドスクリプト + 本節の手順)を asset として並べる。
-    あわせて patch とビルドスクリプト(開発機パスを除いたもの)を配布アーカイブに同梱する(例: `src/allegro-dvt/`)。
-  - 案 B: repo に patch とビルドスクリプトだけを同梱し、upstream のコミット URL を示す。簡便だが、GPL-2.0 §3 の
-    厳密な読みでは不足の可能性がある(見解)。
-  - どちらの場合も、kernel の設定・build tree は board の公式 kernel(`6.12.40-xilinx-g31626ef92ff1`)のものを使う旨を書く。
-- **状態**: 出所・patch 内容・ライセンスは確認済。**ソース提供の実施は要決定**(現時点で patch とビルドスクリプトは本 repo に無い)。
+- **提供方法 = ★案 A を実施(2026-09-12)**:
+  - **repo / 配布アーカイブに同梱**するもの = [src/allegro-dvt/](src/allegro-dvt/)(配布アーカイブでは `src/allegro-dvt/`)。
+    中身 = 上流の特定(repo・コミット・10 ファイル)、`upstream_sources.sha256`(上流 10 ファイルの sha256)、
+    patch(`0001-allegro-dvt-kv260-disable-encoder-buffer.patch` = 正規の unified diff。`patch -p1` / `-p5` で当たる)、
+    `build_allegro_dvt.sh`(取得 → sha256 照合 → patch → クロスビルド → vermagic 確認。**開発機パスを含まない**)、
+    および手順の説明([src/allegro-dvt/README.md](src/allegro-dvt/README.md))。
+  - **ko と同じ GitHub Release に並べる別 asset** = `allegro-dvt-gpl-src-31626ef92ff1.tar.gz`。
+    中身 = 上記一式 + **上流 10 ファイルの実体**(未改変)+ patch 適用済み `allegro-core.c` + `SHA256SUMS`。
+    ★これにより**ネットワーク無しでビルドが完結する**(`SRCDIR=<展開先>/upstream bash build_allegro_dvt.sh`)。
+    生成は開発 repo の `scripts/package_allegro_dvt_source.sh`(上流取得 → sha256 照合 → patch 実適用を検証 → tar)。
+  - kernel の設定・build tree は board の公式 kernel(`6.12.40-xilinx-g31626ef92ff1`)のものを使う。
+  - ★**運用上の義務**: ko を含む release を作るたびに、この source tarball を**同じ release の asset として必ず並べる**
+    (GPL-2.0 §3。配布アーカイブの `RELEASE_NOTES.md` にもこの注意を出している)。
+- **patch の同一性について**: 同梱 patch は上流 `31626ef92ff1` の `allegro-core.c` に対して `patch` でクリーンに当たり、
+  適用結果が `patched/allegro-core.c` とバイト一致することを tarball 生成時に毎回検証している(確認済)。
+  配布 ko のビルド時に当てた変更とはコメント文の分量だけが違い、**コンパイル結果に影響する差は無い**
+  (追加した実行文は `if (memory_depth == 0) return -ENODEV;` の 1 つだけ)。
+- **状態**: ★**解決済(2026-09-12)**。出所・patch 内容・ライセンス・提供方法のすべてが確定し、ソースも用意した。
+  残る運用上の注意は上記「運用上の義務」だけ。
 
 ## 3. `al5e.fw` / `al5e_b.fw`(VCU microcode)
 
@@ -214,15 +231,80 @@ Copyright (c) 2026 Leiden21g. All rights reserved.
 2. 改変、リバースエンジニアリング、逆アセンブル、および PL の実体(回路・ネットリスト・ソース)の
    抽出を意図した解析は認めない。
 3. 本ファイルは AMD(Xilinx)の IP を含む生成物である。使用・再配布にあたっては AMD の該当する
-   ライセンス条件にも従うこと(§4-5)。
+   ライセンス条件にも従うこと(§4-5)。とくに本ファイルは **AMD(Xilinx)のデバイス(KV260 等)を
+   プログラムする目的でのみ**使用・再配布できる(AMD EULA §3(a)(3)C / §4(a))。
 4. 無保証。本ファイルの使用から生じるいかなる損害についても著作者は責任を負わない。
 ```
 
-### 4-5. AMD IP の再配布条件(★要確認 = 未解決)
+### 4-5. AMD IP の再配布条件(★条文を確認済 = 2026-09-12)
 
-- bitstream に含まれる AMD IP の再配布条件(AMD/Xilinx の IP ライセンス・EULA)は**本 repo では条文を確認していない**。
-  一般には「Xilinx デバイス上で使う bitstream としての配布」は許される扱いと理解しているが、**未確認**である。
-- これは §4-4 の自作部分の条件とは**別の論点**であり、§4-4 を決めても解消しない。公開前に確認すること。
+bit/xclbin には、AMD(Xilinx)がツールに同梱して提供する IP core の生成物が含まれる。その再配布条件を
+**AMD の EULA 原文で確認した**(以前の本節は「条文を確認していない」としていた)。
+
+- **参照した条文(確認済)**: Vitis 2025.2 のインストールに含まれる *XILINX, INC. END USER LICENSE AGREEMENT*。
+  - `/opt/Xilinx/2025.2/.xinstall/2025.2.1/data/unified_xilinx_eulas_vitis.txt`
+    (対象 Software = Vitis Unified Software Platform / Vitis HLS / Vivado ML Edition / Vitis Model Composer。
+    末尾の版表記 `2025.09.30`、md5 `0379c6c7491bd0e194ed3bfc2475eb40`、26,651 バイト)
+  - 同内容の公開 PDF = **UG1593 Vivado ML End User License Agreement**
+    https://download.amd.com/docnav/documents/eula/ug1593_vivado_ml_eulas_2025.2.pdf
+  - **確認済**: 本節が引用する §3(a)(3)C・§4(a)・§4(b) は、インストール内の Vitis 変種 / Vivado 変種 /
+    Bootgen 変種で**文言が一致する**(差分は対象ツールの一覧・輸出管理条項・末尾の日付だけ)。
+    したがって Vivado で bit → `v++` で xclbin → Bootgen で `.bit.bin` のどの経路でも配布条項は同じ。
+
+**§3(a)(3)C Distribution Rights(原文)**
+
+> C.	Distribution Rights.  Licensee may distribute Distributable Components (including when modified
+> per Section 3(a)(3)B (Modification Rights) above), provided that either (a) such Distributable
+> Components have been converted into a machine executable form, such as in the case of a Core or
+> Design Element, a Bitstream, and in the case of a Driver, in compiled object code form; or (b) the
+> recipient thereof has a valid license from Xilinx to use the same Software.  In all cases
+> Distributable Components shall be distributed only for use to program a Xilinx Device.
+
+要約: AMD 提供の IP core を含む成果物は、**bitstream のような機械実行形式に変換された形であれば第三者に
+配布してよい**。ただし配布は「**AMD(Xilinx)デバイスをプログラムする用途に限る**」。
+
+**§4(a) Special Use Restrictions(原文、抜粋)**
+
+> No right is granted hereunder to use the Software or any Bitstream generated by use of the Software
+> to program or develop designs for non-Xilinx Devices; …
+
+要約: ツールおよび**その生成 Bitstream** を、AMD 以外のデバイス向けの設計に使う権利は与えられていない。
+
+**§4(b)(i) General Restrictions(原文、抜粋)**
+
+> (i) decompile, translate, reverse-engineer, disassemble, or otherwise reduce to human readable form
+> the Software or the data files generated by the Software;
+
+要約: ツールおよび**ツールが生成したデータファイル**のリバースエンジニアリングは許諾されていない。
+§4-4 の条項 2(改変・リバースエンジニアリングを認めない)はこれと同じ方向である。
+
+- **本件で使っている AMD IP はすべて「無償同梱(ライセンスキー不要)」の core である(確認済)**。
+  §3(a)(3)A は対象を *"a 'Core' … includes only a 'Core' provided by Xilinx in the Software tools listed
+  above at no additional charge, and not any fee-based LogiCORE products"* と定めており、本件はこれに該当する。
+  確認方法 = (1) キーが要る IP の一覧 `/opt/Xilinx/2025.2/data/ip/core_licenses/{Xilinx.lic,XilinxFree.lic}` に
+  使用 IP が**1 つも載っていない**、(2) 使用 IP の `component.xml` に `licenseKey` 要素が**無い**
+  (対照実験: キーが要る `cmac_usplus_v3_1` には 4 件ある = この判定に判別力があることを確認済)。
+  有償 LogiCORE・評価版(hardware evaluation)ライセンスの IP は**使っていない**
+  (傍証: 評価版 bitstream は数時間で停止するが、本構成は長時間の連続配信で動作している)。
+
+- **AMD 自身の配布前例(確認済)**: AMD は Kria KV260 / KR260 用の PL firmware を prebuilt バイナリ
+  (`*.bit.bin` / `*.xclbin`)で公開しており、ソースは付けていない(https://github.com/Xilinx/kria-apps-firmware)。
+  その条件 `LICENSE-BINARIES` は「**バイナリ形式のみ・無改変での再配布を許す、BSD に似ているが BSD ではない
+  独自の許諾**」で、条件は著作権表示の再掲と Xilinx 名の推奨利用の禁止の 2 点である。
+  (見解)§4-4 の条件(バイナリのまま再配布可・改変/リバース禁止・無保証)はこれとほぼ同型である。
+
+- **(見解)本 repo の整理**: 以上より、bit/xclbin を「**KV260(AMD Zynq UltraScale+ MPSoC)で使うための
+  バイナリ**」として再配布することは AMD の EULA と整合すると理解している。利用者は本ファイルを
+  **AMD 以外のデバイスをプログラムする目的で使ってはならない**(§3(a)(3)C / §4(a))。
+
+- **★要確認として残る論点**(いずれも条文を読んだだけでは決まらない。必要なら専門家に確認すること):
+  1. EULA が定めるのは **AMD 供給部分の配布**であって、自作 HLS kernel を含む**成果物全体**の条件ではない。
+     全体を §4-4 の独自条件で配ることの妥当性は EULA からは出てこない。
+  2. 「AMD デバイス上での使用に限る」という用途限定を、受領者に対してどこまで明記する必要があるか。
+  3. §4(b)(i) のリバースエンジニアリング禁止を**受領者に引き継がせる義務**が条文上あるか
+     (EULA に明示の flow-down 条項は**見つからなかった**が、「無い」と言い切るには読みに依存する)。
+  4. ツール同梱の第三者 OSS 集(`Third_Party_Software_EULA.txt`、約 710 万行)は精読していない。
+     IP の RTL ではなくツール実行環境の OSS が主と見ているが、未確認。
 
 ### 4-6. AGPL-3.0 の対応ソース義務との関係(見解)
 
@@ -247,8 +329,21 @@ Copyright (c) 2026 Leiden21g. All rights reserved.
 
 - 自作の device tree overlay。ただし camera / probe / XRT(zocl)部分は AMD のツールが生成した overlay を decompile して
   再構成し、VCU 部分は AMD の VCU binding を元に `allegro,al5e-1.1` binding へ書き換えたもの(開発記録による)。
-- **要確認**: overlay のソース(`.dtso`)は本 repo に**含まれていない**。AGPL-3.0 で配布するなら `.dtso` を同梱するのが
-  筋(見解)。元にした AMD 生成 DT の扱い(ライセンス表記の有無)も未確認。
+- **ライセンス**: 本プロジェクトの著作物として **AGPL-3.0**([LICENSE](LICENSE))。
+- ★**ソース同梱 = 実施済(2026-09-12)**: ソースは [src/dtbo/combined_allegro.dtso](src/dtbo/combined_allegro.dtso)
+  (配布アーカイブでは `src/dtbo/`)。**確認済**: `dtc -@ -I dts -O dtb` で配布 dtbo と **byte-exact に一致**する
+  (md5 `9dd5895218d5295bced3c17cf9439a3b` / 11,257 バイト、DTC 1.6.1)。配布アーカイブの生成スクリプトが毎回この
+  一致を検査する。
+  (以前の本節には「ソースが本 repo に無い」とあったが、**誤り**だった。開発 repo の
+  `scripts/fan_platform/combined_vcu_yolo_allegro.dtso` として最初から存在しており、`src/dtbo/` のものは
+  そのヘッダコメントを公開向けに書き直しただけで、DT の本体は**バイト同一**である。)
+- **AMD 生成 DT を元にした部分について**(見解): 元にしたのは AMD のツール(Vitis / DTG)が**本プロジェクトの
+  ハードウェア設計から生成した** device tree であり、ノード名・`compatible` 文字列・レジスタアドレスといった
+  binding の記述が主である。**確認済**: AMD のツールが生成した DT(`XSCT 2025.2` 出力)に入っているのは
+  「`CAUTION: This file is automatically generated by Xilinx.` + 版と日付」のコメントだけで、
+  **著作権表示もライセンス条文も無い**。配布 dtbo 自体にもそうした文字列は無い(コメントは dtb に残らない)。
+  **要確認**として残るのはこの点の法的評価(AMD ツールの生成物に AMD の権利が及ぶかどうか)だけで、
+  ソースの所在としては解決している。なお bitstream に含まれる AMD IP の再配布条件は別論点(§4-5)。
 
 ## 6. MediaMTX
 
@@ -351,21 +446,50 @@ Copyright (c) 2026 Leiden21g. All rights reserved.
 
 ## 公開前に決めること(要確認のまとめ)
 
-1. `allegro_dvt.ko` の GPL-2.0 対応ソースの提供方法(§2。案 A 推奨: Release にソース tarball + repo に patch とビルドスクリプト)。
-2. `n.q` の AGPL-3.0 対応ソースの範囲(§1。変換ツールを含めるか)。
+1. ~~`allegro_dvt.ko` の GPL-2.0 対応ソースの提供方法~~ → ★**決定済・実施済(2026-09-12)= 案 A**(§2)。
+   repo / 配布アーカイブに [src/allegro-dvt/](src/allegro-dvt/)(上流の特定 + sha256 + patch + `build_allegro_dvt.sh`)を同梱し、
+   上流ソースの実体は **ko と同じ Release の別 asset** `allegro-dvt-gpl-src-31626ef92ff1.tar.gz` として並べる。
+   ★**残る運用上の義務 = ko を含む release を作るたびに、この source tarball を必ず同じ release に並べること**。
+2. ~~`n.q` の AGPL-3.0 対応ソースの範囲(変換ツールを含めるか)~~ → ★**決定済・実施済(2026-09-12)= 同梱する**(§1)。
+   [src/nq/](src/nq/) に `.pt` → `n.q` 変換ツールの全ソースを置いた。**確認済**: この dir だけで
+   (上流 `.pt` + 同梱 sidecar を入力に)配布 `n.q` を **byte-exact に再生成できる**(`cmp` 差分 0、
+   依存は C++17 のみ)。sidecar を作り直す calibration Python(torch + ultralytics)は同梱していない。
 3. ~~bit/xclbin のライセンス表明と、自作 HLS kernel ソースを公開するか~~ → ★**決定済(2026-09-12)**:
    bit/xclbin は **AGPL-3.0 ではなく独自条件**で配布(条件文 = §4-4)。**HLS kernel ソースは公開しない**(§4-7、
    [README.md](README.md) の「PL の再生成は範囲外」と整合)。根拠 = bit/xclbin は重みも Ultralytics 由来コードも
    含まず(§4-1・§4-2)、host とは XRT 越しの別バイナリ(§4-3)であり、AGPL 部分とは集合物の関係(§4-6、見解)。
    ★最終的な法的判断は専門家の確認が望ましい。
-3-b. ★**未解決のまま残る**: bitstream に含まれる **AMD IP の再配布条件**(AMD/Xilinx の IP ライセンス・EULA の
-   条文確認)。これは 3 とは別の論点で、3 を決めても解消しない(§4-5)。
-4. `combined_allegro.dtbo` のソース(`.dtso`)を同梱するか(§5)。
-5. 配布する推論 host ELF(`c6b433a0`)は、本 repo の `live/inference_host/` の簡素化版ではなく**簡素化前のソース**から
-   ビルドしたもの(`live/README.md`)。AGPL-3.0 の対応ソースと一致させるなら、Release asset には本 repo のソースから
-   ビルドした ELF(`live/MD5SUMS.expect.txt` の期待 md5)を載せるか、簡素化前のソースも公開する必要がある(見解)。
-6. AGPL-3.0 §13(ネットワーク越しの利用者へのソース提供): board の視聴ページ(`:8890`)などを改変して第三者に
-   ネットワーク越しに使わせる場合に関係する。視聴ページに本 repo へのリンクを出すかは要検討(見解)。
+3-b. ~~bitstream に含まれる **AMD IP の再配布条件**~~ → ★**条文を確認済(2026-09-12)**(§4-5):
+   AMD の EULA **§3(a)(3)C** が、同梱 IP core を含む成果物を **bitstream 等の機械実行形式で第三者に配布すること
+   を明文で許している**(用途は「AMD デバイスをプログラムすること」に限定)。本件の IP はすべて無償同梱
+   (ライセンスキー不要)であることも確認済。AMD 自身も KV260 用 PL firmware をバイナリのみで配布している前例がある。
+   ★**残る論点は 4 つ**(成果物全体の条件は EULA では決まらない / 用途限定を受領者にどう明記するか /
+   リバースエンジニアリング禁止の flow-down 義務の有無 / ツール同梱 OSS 集の未精読)= §4-5 末尾。
+4. ~~`combined_allegro.dtbo` のソース(`.dtso`)を同梱するか~~ → ★**決定済・実施済(2026-09-12)= 同梱する**(§5)。
+   [src/dtbo/combined_allegro.dtso](src/dtbo/combined_allegro.dtso)。`dtc` で配布 dtbo を **byte-exact に再生成**できることを
+   確認済(md5 `9dd58952`)で、配布アーカイブの生成スクリプトが毎回この一致を検査する。
+   ★この項目に書いていた「ソースが本 repo に無い」は**誤り**だった(最初から `scripts/fan_platform/` に存在した)。
+   残るのは、元にした AMD ツール生成 DT の法的評価(§5 の最終項)だけ。
+5. ~~配布する推論 host ELF(`c6b433a0`)が公開ソースからビルドできない~~ → ★**解決済(2026-09-12)**:
+   **配布物の推論 host ELF を公開ソース版 `3f586c9d` に統一した**。本 repo の `live/inference_host/`
+   (簡素化版)を `SOURCE_DATE_EPOCH` pin でビルドすると **byte 再現する**ことを実測で確認し
+   (`live/MD5SUMS.expect.txt` / `y26_live_recipe.env` の `EXPECT_HOST_ELF_MD5`)、release 生成時に
+   その実体を差し込む(`scripts/package_public_release.sh` §4c)。期待値と違う ELF を差し込もうとすると
+   生成が止まるので、「公開ソースからビルドできない ELF」を再び配ることはない。
+   ★**board 実機への差し替えも完了(2026-09-12)**: 置換前後の canary がいずれも **GOLD 6/6 一致**
+   (139.19 → 139.56 ms/img)、live 10 分 6000 枚で **fps 9.88〜9.92**、無接触 14 点の md5 不変。
+   = **配布物・公開ソース・board 実機の 3 者が一致した**(報告 = `doc/verify/public_elf_agpl13_20260912/`。
+   開発 repo 側の記録で、公開物には含まれない)。
+6. AGPL-3.0 §13(ネットワーク越しの利用者へのソース提供)→ ★**実装済(2026-09-12)**:
+   視聴ページ(`:8890` = `live/web/web_mode_server.py`)に**対応ソースの在処を常時表示する**ようにした。
+   URL は env **`Y7_SOURCE_URL`** で与える(launcher `run_live_rtsp_stream.sh` が webmode unit へ渡す)。
+   未設定のときはリンクを出さず「AGPL-3.0(対応ソース = 配布物同梱の LICENSE / README 参照)」と表示する。
+   ★**公開 repo の URL は確定済** = https://github.com/Leiden21g/kv260detector(2026-09-12、25c で作成)。
+   `Y7_SOURCE_URL` にこれを設定すればリンクが出る(board の再配備は不要)。改変して配信する場合は自分の公開先を設定すること。
+   なお `:8889` は MediaMTX 自身のページなので、本プロジェクトが表示を足せるのは `:8890` だけ。
+   ★**board 実機への配備も完了(2026-09-12)**: 実測で URL 未設定時は
+   `AGPL-3.0(対応ソース = 配布物同梱の LICENSE / README 参照)`、`Y7_SOURCE_URL` 設定時は
+   そのリンクが出ることを確認した(**board 再配備なしに切り替わる**ことも実証済)。
 7. ~~AP1302 の firmware(§11)を同梱しない方針で確定してよいか~~ → ★**決定済(2026-09-12、ユーザ判断)= 同梱しない**。
    利用者が上流(Xilinx/ap1302-firmware)から取得し、ライセンスに同意する形とする(手順 = [doc/setup.md](doc/setup.md) §2-2)。
    これにより EULA 全文(約 20KB)の同梱も、§2.1(d)(オープンソースライセンスの対象となり得る行為の禁止)との

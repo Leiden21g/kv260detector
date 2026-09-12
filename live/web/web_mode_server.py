@@ -7,10 +7,15 @@
 #   / は視聴ページ(mediamtx WebRTC :8889/detect を iframe 埋め込み+切替ボタン)。
 #   iframe がブロックされる環境では :8889 を別タブで開き、本ページはボタンだけ使えば良い。
 #   起動(launcher が systemd-run): python3 ~/yolov7/web_mode_server.py  (env PORT / MODE_FILE)
-import os, sys, http.server, socketserver, urllib.parse
+import os, sys, html, http.server, socketserver, urllib.parse
 
 PORT = int(os.environ.get("PORT", "8890"))
 MODE_FILE = os.environ.get("MODE_FILE", "/tmp/lv/ovmode")
+# ★AGPL-3.0 §13(2026-09-12): 本ページはネットワーク越しに第三者へ提供されうるので、
+#   対応ソースの在処を視聴者に示す。URL は env `Y7_SOURCE_URL` で与える(launcher が渡す)。
+#   未設定のときはリンクを出さず、「同梱の LICENSE を見よ」という表示だけにする
+#   (公開 repo の URL が確定していない間のため。URL を設定すれば board 再配備なしでリンクが出る)。
+SOURCE_URL = os.environ.get("Y7_SOURCE_URL", "").strip()
 # ★geo640 H4(2026-08-28): 推論幾何 NETH==NETW(640×640 化 = 推論=配信=等倍)のときは「中央ズーム(crop)」の
 #   意味が消える(plan §1-5 既定 = 撤去)→ wide のみ。幾何は geo640.py(同 dir の geo640.env)から。
 #   geo640.py が無い(現行 board 配置)ときは幾何不明 = 従来どおり wide/crop 両方。
@@ -81,6 +86,14 @@ def set_capstate(m, dx, dy):
 def get_capmode():
     return get_capstate()[0]
 
+# AGPL-3.0 §13 の表示(bar 右端)。URL は env で与えられたときだけリンクにする。
+#   ★URL は HTML 属性に入るので必ず escape する(視聴者に出す文字列)。
+if SOURCE_URL:
+    SRCLINK = ('AGPL-3.0 / ソース: <a href="%s" target=_blank rel=noopener>%s</a>'
+               % (html.escape(SOURCE_URL, quote=True), html.escape(SOURCE_URL)))
+else:
+    SRCLINK = "AGPL-3.0(対応ソース = 配布物同梱の LICENSE / README 参照)"
+
 PAGE = """<!doctype html><html lang=ja><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>KV260 live 表示モード</title>
@@ -89,12 +102,15 @@ PAGE = """<!doctype html><html lang=ja><meta charset=utf-8>
  .bar{padding:8px;display:flex;gap:8px;align-items:center}
  button{font-size:16px;padding:6px 18px;border-radius:6px;border:1px solid #555;background:#222;color:#eee;cursor:pointer}
  button.on{background:#2c7;color:#000;font-weight:bold}
+ .src{margin-left:auto;font-size:12px;color:#888}
+ .src a{color:#8bf}
  iframe{border:0;width:100vw;height:calc(100vh - 52px)}
 </style>
 <div class=bar>
  %CAPBTNS%
  %OVBTNS%
  <span id=st></span>
+ <span class=src>%SRCLINK%</span>
 </div>
 %PANBAR%
 <iframe src="http://%HOST%:8889/detect" allow="autoplay"></iframe>
@@ -159,7 +175,8 @@ class H(http.server.BaseHTTPRequestHandler):
             self._send(200, ("%s %d %d" % (m, dx, dy)).encode(), "text/plain")
             return
         if u.path == "/":
-            host = (self.headers.get("Host") or "192.168.0.35").split(":")[0]
+            # Host ヘッダが無い場合の fallback。★開発機の固定 IP は書かない(2026-09-12)。
+            host = (self.headers.get("Host") or "localhost").split(":")[0]
             capbtns = ("<button id=cwide onclick=\"setc('wide')\">全景</button>"
                        "<button id=czoom onclick=\"setc('zoom')\">切り抜き(ズーム)</button>") if CAPMODE_ON else ""
             ovbtns = "" if CAPMODE_ON else (
@@ -177,7 +194,8 @@ class H(http.server.BaseHTTPRequestHandler):
                         .replace("%CAPBTNS%", capbtns)
                         .replace("%OVBTNS%", ovbtns)
                         .replace("%CAP%", "true" if CAPMODE_ON else "false")
-                        .replace("%MODELIST%", repr(list(MODES))))
+                        .replace("%MODELIST%", repr(list(MODES)))
+                        .replace("%SRCLINK%", SRCLINK))
             self._send(200, page.encode(), "text/html; charset=utf-8")
             return
         self._send(404, b"not found", "text/plain")

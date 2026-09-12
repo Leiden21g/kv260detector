@@ -56,13 +56,18 @@ board へ配置する一式は **repo に含めない**。`.tar.gz` 1 本にま�
 - 中身: 配置バイナリ一式(`firmware/` = bit / xclbin / `al5e*.fw` / dtbo、`home/` = launcher・`allegro_dvt.ko`・
   `vcu_stream`・推論 host ELF・`n.q` / `x.bin`、`fan/` = fan 制御 unit)+ 配置スクリプト **`install.sh`** +
   同梱 **`README.md`**(中身・配置先・版の整合)+ **`MD5SUMS.txt`** + **`LICENSE`** + **`THIRD_PARTY_NOTICES.md`** +
-  `reference/`(transient unit の生ファイル等)。
+  **`src/`** = 同梱バイナリの**対応ソース**(`src/allegro-dvt/` = `allegro_dvt.ko` の GPL-2.0 対応ソース、
+  `src/dtbo/` = `combined_allegro.dtbo` の `.dtso`。いずれも repo の [src/](src/) と同じもの)。
 - 使い方: 展開 → `home/mediamtx` を上流から取得して置く → `md5sum -c MD5SUMS.txt` →
   `bash install.sh <user>@<board>`。詳細は [doc/setup.md](doc/setup.md) §3-0〜§3-1。
 - 版の正は同梱の `MD5SUMS.txt`。PL(bit / xclbin)・`n.q`・推論 host ELF はセットで一致していること。
 - **MediaMTX は同梱も再配布もしない**。上流の GitHub Release から取得する(`doc/setup.md` §3-0)。
 - `capture_daemon` / `camera_preprocess` / `vcu_stream` は本 repo の `live/` から再ビルドすると asset 同梱の
   配備品と byte 一致する(`live/MD5SUMS.expect.txt`)。PL(bit / xclbin)と `n.q` の再生成は本 repo の範囲外。
+- `allegro_dvt.ko`(GPL-2.0)と `combined_allegro.dtbo` の**対応ソース**は [src/](src/) にある。
+  `combined_allegro.dtbo` は `dtc` だけで byte-exact に再生成できる(`src/dtbo/`)。`allegro_dvt.ko` の上流
+  ソース実体は、ko と同じ Release の別 asset `allegro-dvt-gpl-src-31626ef92ff1.tar.gz` として配る
+  (オフラインでビルドできる形。`src/allegro-dvt/README.md`)。
 
 ## ライセンス
 

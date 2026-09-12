@@ -1,0 +1,24 @@
+--- a/drivers/media/platform/allegro-dvt/allegro-core.c
++++ b/drivers/media/platform/allegro-dvt/allegro-core.c
+@@ -970,6 +970,21 @@
+ 	err = regmap_read(settings, VCU_MEMORY_DEPTH, &memory_depth);
+ 	if (err < 0)
+ 		return err;
++	/* KV260 fix: the VCU IP is synthesized with ENC_BUFFER_EN=false, so
++	 * VCU_MEMORY_DEPTH reads back as 0. Continuing would compute
++	 * buffer->size = color_depth * 32 * memory_depth = 0 and make
++	 * create_channel send encoder_buffer_size=0 to the MCU, which fails
++	 * with "resource unavailable (8e)". Report -ENODEV instead so that
++	 * has_encoder_buffer stays false and create_channel disables the
++	 * encoder buffer (-1). The encoder buffer is an optional DDR-bandwidth
++	 * optimization; H.264/HEVC encoding works without it.
++	 *
++	 * KV260 対策: IP が ENC_BUFFER_EN=false(VCU_MEMORY_DEPTH=0)の時は encoder
++	 * buffer 無し。そのまま進むと create_channel が encoder_buffer_size=0 を MCU に
++	 * 送って "resource unavailable (8e)" で channel 作成に失敗する。
++	 */
++	if (memory_depth == 0)
++		return -ENODEV;
+ 	err = regmap_read(settings, VCU_NUM_CORE, &num_cores);
+ 	if (err < 0)
+ 		return err;
