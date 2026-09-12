@@ -437,7 +437,7 @@ board へ配置する一式(バイナリ + launcher + fan 制御 + `install.sh`)
 # (a) 本 repo の GitHub Release ページから asset と、併記の sha256 を取得して照合し、展開する
 #     asset は Release ページ https://github.com/Leiden21g/kv260detector/releases/tag/v1.0 にある
 curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.0/y7-public-14279337.tar.gz
-sha256sum y7-public-14279337.tar.gz             # 期待: ac50a6394f44f1fa9213170ede8badfbf1ee965dda4d136815069d1737229d85
+sha256sum y7-public-14279337.tar.gz             # 期待: 386d35e5df7d6e42b4258cd4f61591d5b073f4013e5b7c3de3e9e30cb5bd8faf
 tar -xzf y7-public-14279337.tar.gz              # → y7-public-14279337/ (= 以下の <pkg>)
 ```
 
