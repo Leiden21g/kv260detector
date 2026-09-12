@@ -124,7 +124,7 @@ log "✔ 完成: $WORK/src/allegro.ko"
 cat <<EOS
 
 board への配置:
-  scp $WORK/src/allegro.ko petalinux@<board>:~/allegro_dvt.ko
+  scp $WORK/src/allegro.ko <user>@<board>:~/allegro_dvt.ko
   (insmod は launcher の live/launcher/vcu_enc_setup.sh が行う)
 
 ★配布 ko との md5 一致は保証しない。コンパイラ版・build tree の差で

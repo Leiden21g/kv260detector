@@ -347,9 +347,10 @@
 		assigned-clock-rates = <667000000 444000000>;
 		ranges;
 
-		/* ★encoder binding = proprietary(9486176a と同一)。Path C 採用時は
-		 * compatible="allegro,al5e-1.1" + clock-names を allegro-dvt.ko 要求名へ差替
-		 * ([[vcu_encoder_driver_decision_20260704.md]] §4)。 */
+		/* ★encoder binding の由来: AMD の proprietary driver 向け binding では
+		 * mainline の allegro-dvt driver が bind しないため、compatible を
+		 * "allegro,al5e-1.1" に、clock-names を同 driver の要求名へ差し替えてある
+		 * (下記の「allegro-dvt 版」がその結果。driver 側は ../allegro-dvt/ 参照)。 */
 		/* ★allegro-dvt(mainline V4L2)版: regs/sram split + core_clk/mcu_clk。
 		 * sram=base(0x9000)/regs=base+0x9000(0x1000)= VCU lite base 0x80100000 の IP 内部 offset
 		 * (slcr=base+0x40000=0x80140000 で確定)。allegro.ko(cross-build)が bind → /dev/videoN。 */
