@@ -82,3 +82,8 @@ GitHub Release asset
 - Third-party components (`allegro_dvt.ko` = GPL-2.0, VCU firmware `al5e*.fw` = Allegro DVT2 license, MediaMTX = MIT, XRT = Apache-2.0,
   AMD IP contained in the bit/xclbin, etc.) are subject to their respective licenses. For the list, sources, obligations, and open items, see
   **[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)**.
+
+## Contact
+
+- For inquiries about this repo: **leiden21g@gmail.com**
+- Bug reports and questions are also welcome on GitHub [Issues](https://github.com/Leiden21g/kv260detector/issues).

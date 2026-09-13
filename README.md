@@ -81,3 +81,8 @@ board へ配置する一式は **repo に含めない**。`.tar.gz` 1 本にま�
 - 第三者物(`allegro_dvt.ko` = GPL-2.0、VCU firmware `al5e*.fw` = Allegro DVT2 の許諾、MediaMTX = MIT、XRT = Apache-2.0、
   bit/xclbin に含まれる AMD IP など)はそれぞれのライセンスに従う。一覧・入手元・義務と未確認事項は
   **[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)**。
+
+## 連絡先
+
+- 本 repo に関する連絡: **leiden21g@gmail.com**
+- 不具合の報告・質問は GitHub の [Issues](https://github.com/Leiden21g/kv260detector/issues) でも受け付けます。
