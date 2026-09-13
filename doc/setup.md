@@ -1,3 +1,5 @@
+日本語 | [English](setup.en.md)
+
 # KV260 セットアップ手順 — 起動 SD の準備から Web 配信の起動まで
 
 対象: Kria KV260 Starter Kit + AP1302 カメラモジュール(KV260 付属 IAS モジュール)。
@@ -508,8 +510,8 @@ install.sh がやること:
 - home のスクリプト類だけの更新なら reboot は不要(次の起動から効く)。
 - fan unit を更新したときは次回 boot から有効(今すぐなら `sudo systemctl restart y7-fan`)。
 
-(この install.sh は 2026-09-11 に上の形へ改めた。PC 上で board を模した環境での動作確認はしたが、
-実機 board に対して通した確認はまだ無い = 未検証。改修前の版では実機配置を確認済。)
+(この install.sh は 2026-09-11 に上の形へ改めた。2026-09-12 に素の公式 SD の実機 board に対して §1 からの通しの中で実行し、
+確認済: 1 回目は置換 42 件、2 回目の実行では置換 0 件 / スキップ 42 件 = 再実行しても何も変えない。)
 
 ### 3-2. reboot 後の PL bring-up(毎回)
 
@@ -660,5 +662,6 @@ export SDK=<SDK 展開先>      # sdk.sh -y -d <SDK 展開先> -p で展開し�
   (推論 host の build_id に入る日時は `SOURCE_DATE_EPOCH` で固定している)。
 ★2026-09-10: 推論 host は Web 配信専用へ簡素化した(`live/inference_host/src/y26_live.cpp` +
 `include/y26_live.h` の 2 ファイル、Vitis include 不要)。board で canary GOLD 6/6 byte-exact 一致を確認済。
-配布アーカイブ同梱の ELF(`c6b433a0`)は簡素化前のものなので、**このまま使える**(差替は任意)。
+配布アーカイブ(Release v1.0)同梱の ELF は、この公開ソースからビルドした簡素化版 `3f586c9d`(`live/MD5SUMS.expect.txt` の期待値と同一)。
+2026-09-12 以前の配布物・配備品は簡素化前のソース由来の `c6b433a0` だった(推論結果は同一 = canary GOLD 6/6 一致)。
 PL(xclbin/bit)と n.q の再生成は本公開物の範囲外(Vitis 2025.2 と cap platform が要る)。

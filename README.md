@@ -1,3 +1,5 @@
+日本語 | [English](README.en.md)
+
 # KV260 YOLO26n ライブ検出 Web 配信
 
 AMD Kria **KV260** Starter Kit と AP1302 カメラモジュール(KV260 付属 IAS モジュール)で、カメラ映像を
@@ -48,8 +50,8 @@ PL(bit / xclbin)と `n.q` の再生成は本 repo の範囲外。
 
 ## 配布物(board へ配置する一式)
 
-board へ配置する一式は **repo に含めない**。`.tar.gz` 1 本にまとめ、GitHub Release の asset として配る予定
-(★この asset はまだ公開していない。以下はその前提で書いた手順)。
+board へ配置する一式は **repo に含めない**。`.tar.gz` 1 本にまとめ、GitHub Release の asset として配っている
+(Release v1.0 で公開済み: https://github.com/Leiden21g/kv260detector/releases/tag/v1.0 。取得と sha256 照合は [doc/setup.md](doc/setup.md) §3-0)。
 
 - ファイル名は `y7-public-<tag>.tar.gz`。`<tag>` には採用ビルドの **xclbin の md5 先頭 8 桁**が入る
   (本書が対象とする採用ビルドは xclbin `14279337` = `y7-public-14279337.tar.gz`)。
