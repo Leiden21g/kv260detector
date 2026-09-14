@@ -1,0 +1,49 @@
+name: Feature request
+description: Suggest an improvement to the published source, distribution archive, or documentation.
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. 日本語での記入も歓迎します。
+
+        Note: regenerating the PL (bit / xclbin) and `n.q` (e.g. other models, resolutions or quantization)
+        is out of scope for this repo, so requests that require a new PL build may not be actionable.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - "Board-side programs (capture / preprocess / inference host / vcu_stream)"
+        - "Streaming / web viewer (RTSP, MediaMTX, viewer page)"
+        - "Deployment (install.sh, distribution archive)"
+        - "Build (build_live.sh, src/)"
+        - "Documentation (README, setup guide)"
+        - "Other"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What you are trying to do and what is missing or inconvenient today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How you would like it to work.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to open a pull request for this (contributions are under AGPL-3.0, see LICENSE).

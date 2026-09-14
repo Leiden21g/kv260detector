@@ -1,0 +1,17 @@
+# Issue chooser for this repo. Blank issues are disabled so that reports carry the
+# version / hardware information needed to reproduce them; use the "Question" form
+# for anything that does not fit the other forms.
+blank_issues_enabled: false
+contact_links:
+  - name: Setup guide (English)
+    url: https://github.com/Leiden21g/kv260detector/blob/main/doc/setup.en.md
+    about: Full procedure from the boot SD to the web stream. §3-8 "Common symptoms" covers most known problems.
+  - name: セットアップ手順(日本語)
+    url: https://github.com/Leiden21g/kv260detector/blob/main/doc/setup.md
+    about: SD 準備から Web 配信までの手順。§3-8 に既知の症状と対処があります。
+  - name: Release v1.0 (distribution archive and sha256)
+    url: https://github.com/Leiden21g/kv260detector/releases/tag/v1.0
+    about: Download the distribution archive and check its sha256 before reporting a deployment problem.
+  - name: Contact by email (non-public inquiries)
+    url: https://github.com/Leiden21g/kv260detector#contact
+    about: For inquiries that should not be public (e.g. licensing), use the address in the README "Contact" section.

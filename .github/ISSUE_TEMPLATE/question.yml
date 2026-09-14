@@ -1,0 +1,48 @@
+name: Question / setup help
+description: Ask about setup, usage, rebuilding, licensing of the published parts, or anything not covered by the other forms.
+title: "[Question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read [doc/setup.en.md](https://github.com/Leiden21g/kv260detector/blob/main/doc/setup.en.md)
+        ([日本語](https://github.com/Leiden21g/kv260detector/blob/main/doc/setup.md)) and
+        [live/README.md](https://github.com/Leiden21g/kv260detector/blob/main/live/README.md) first.
+        日本語での質問も歓迎します。
+
+        Note: regenerating the PL (bit / xclbin) and `n.q` is out of scope for this repo.
+        This is a public tracker — do not post private information (addresses, credentials, keys).
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - "Boot SD / Boot FW / first boot"
+        - "Distribution archive / install.sh"
+        - "PL bring-up / canary"
+        - "Web streaming (RTSP / WebRTC / HLS / viewer page)"
+        - "Camera (AP1302) / image quality / launch parameters"
+        - "Rebuilding from source (live/, src/)"
+        - "License / third-party components"
+        - "Other"
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What you want to know or do. If you are stuck at a step, include the section number of the setup guide.
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you have tried
+      description: Commands run, output observed, documents already checked.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment (if relevant)
+      description: Distribution archive name, SD image, `uname -r`, camera, PC OS / browser.
+      render: text

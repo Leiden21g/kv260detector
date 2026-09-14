@@ -1,0 +1,119 @@
+name: Bug report
+description: Something does not work as described in doc/setup.en.md (deployment, PL bring-up, canary, streaming, rebuild).
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Before filing, please check **§3-8 "Common symptoms"** in
+        [doc/setup.en.md](https://github.com/Leiden21g/kv260detector/blob/main/doc/setup.en.md)
+        ([日本語](https://github.com/Leiden21g/kv260detector/blob/main/doc/setup.md)).
+        日本語での記入も歓迎します。
+
+        ⚠ This is a public issue tracker. **Remove private information** (IP addresses you do not want to publish,
+        hostnames, user names, passwords, keys) from logs before pasting.
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Where does it fail?
+      description: The step of doc/setup.en.md where the problem appears.
+      options:
+        - "§1 Boot SD / Boot FW"
+        - "§2 First boot, ssh, packages, camera firmware"
+        - "§3-0 / §3-1 Distribution archive, install.sh"
+        - "§3-2 PL bring-up (vcu_enc_setup.sh)"
+        - "§3-3 Canary check"
+        - "§3-4 / §3-5 Web streaming (start / operation)"
+        - "§3-6 Stopping"
+        - "§3-9 Rebuilding from live/ (build_live.sh)"
+        - "Other"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what actually happened (error messages, frozen picture, wedge, kernel Oops, ...).
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Commands you ran, in order. Mention whether the board was rebooted before, and whether any previous run was killed mid-run.
+      placeholder: |
+        1. sudo systemctl reboot
+        2. bash ~/vcu_enc_setup.sh
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: release
+    attributes:
+      label: Distribution archive
+      description: File name and sha256 of the archive you deployed (e.g. y7-public-14279337.tar.gz / ac50a639...). Write "rebuilt from source" if applicable.
+      placeholder: "y7-public-14279337.tar.gz, sha256 ac50a639..."
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Board software versions
+      description: Output of the commands below, run on the board.
+      render: text
+      placeholder: |
+        uname -r
+        cat /etc/os-release | head -3
+        sudo xmutil bootfw_status | head -20
+        md5sum /lib/firmware/xilinx/yolov7vcu/* ~/allegro_dvt.ko
+        rpm -q xrt
+    validations:
+      required: true
+  - type: dropdown
+    id: sd-image
+    attributes:
+      label: Boot SD image
+      options:
+        - "AMD official Kria Starter Kit 2025.2 wic (as in §1)"
+        - "Other / self-built image (describe below)"
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware and camera
+      description: Board, camera module and connector, power, anything non-standard.
+      placeholder: "KV260 Starter Kit, AP1302 + AR1335 on IAS0 (J7)"
+    validations:
+      required: true
+  - type: dropdown
+    id: canary
+    attributes:
+      label: Canary result (§3-3)
+      options:
+        - "GOLD 6/6 match"
+        - "Values differ from GOLD"
+        - "No output / rc != 0"
+        - "Not run"
+    validations:
+      required: true
+  - type: input
+    id: fps
+    attributes:
+      label: fps / timing
+      description: If relevant, the observed fps (live) and/or the canary TIMING line (ms/img). Expected ≈ 9.5 fps live, ≈ 140 ms/img canary.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Relevant parts of e.g. `/tmp/live_rtsp_stream.log`, `sudo journalctl -u yololoop -n 50 --no-pager`,
+        `systemctl is-active capdlive ppdaemon probedrain vcustream rtspdetect webmode yololoop mediamtx`,
+        `sudo dmesg | tail -50`, install.sh output. Pasted text is shown as a code block.
+      render: text
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Screenshots, network setup of the viewing PC/browser, changes to launch parameters (§3-7), etc.
