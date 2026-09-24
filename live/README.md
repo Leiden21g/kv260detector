@@ -55,7 +55,7 @@ MaxPool・Resize・Split)/ PSA golden 突合 / HB ring / PROBE63 / DBG_L50 / `LA
 
 ### board 実測(2026-09-10、全段 PASS)
 
-簡素化 host の canary が **GOLD 6/6 完全一致**(`d5053fa6 d4f8cc60 de3383a1 1c5155a5 13a60293 f30905c4`、
+簡素化 host の canary が **GOLD 6/6 完全一致**(`d5053fa6 d4f8cc60 de3383a1 1c5155a5 13a60293 f30905c4`、v1.0 の n.q 3a83aeb5 での値、
 selfcons 6/6)= 推論結果は 1 bit も変わっていない。**137.82 ms/img(旧 140.67 から −2.0%)**、
 live 20 分で **fps 9.90〜9.95**(旧 9.63〜9.87)、8 unit active、`:8889/detect/`=200、`:8890`=200、
 NRestarts 0、事後 canary も GOLD 一致。
@@ -95,6 +95,9 @@ SDK=<SDK 展開先> bash build_live.sh all      # → out/(配信 3 本 + host)
   公開ソースが一致する(AGPL-3.0 の対応ソース)。それ以前に配布/配備していた `c6b433a0` は
   簡素化前(host.cpp 63c7657b / tasks.cpp 98a74755)のもので、簡素化版とはバイナリが違った
   (**推論結果は board canary で GOLD 一致を確認済**)。
+- ★2026-09-24(v1.1): 推論 host の PE 重み(PSA の位置項)を int16 へ詰める処理を**飽和**にした
+  (旧版は範囲外の 2 値で符号が反転していた)。PE ファイルが無い region は警告を出す。配布 ELF = `5446141e`。
+  同時に n.q を 2c6a15bc へ更新したので canary GOLD は `0cd128f1 ec9ef88d 4b33a187 28ec7e43 9bf53b2a ef000a69` に変わる。
 - 本 dir から再ビルドした配信 3 本(`capture_daemon` 7a323056 / `camera_preprocess` b2a09f41 / `vcu_stream` 01c52c91)は
   **配備品と byte 一致**(2026-09-10 確認。期待 md5 と経緯は `MD5SUMS.expect.txt`。`vcu_stream` は同日に board 側を
   再現可能な動的リンク版へ差し替えて一致させた)。推論 host も 2026-09-12 に配布物側を本 dir の

@@ -404,11 +404,18 @@ int main(int argc, char **argv){
       size_t nw = fread(wbuf, sizeof(float), 128*9, fw);
       size_t nb = fread(bbuf, sizeof(float), 128, fb);
       if (nw == 128*9 && nb == 128) {
-        for (int i = 0; i < 128;   i++) pe[i]       = (int16_t)lrintf(bbuf[i] * PE_GMEM_SCALE);       // bias[128]
-        for (int i = 0; i < 128*9; i++) pe[128 + i] = (int16_t)lrintf(wbuf[i] * PE_GMEM_SCALE);       // weight[128*9]
+        // int16 へは飽和で詰める(単純キャストは範囲外で wrap = 符号反転。2 つ目の PSA の 2 tap が |w|>=8 で該当)。
+        int pe_sat = 0;
+        auto pe_q = [&](float v) -> int16_t {
+          long q = lrintf(v * PE_GMEM_SCALE);
+          if (q > 32767) { q = 32767; pe_sat++; } else if (q < -32768) { q = -32768; pe_sat++; }
+          return (int16_t)q; };
+        for (int i = 0; i < 128;   i++) pe[i]       = pe_q(bbuf[i]);       // bias[128]
+        for (int i = 0; i < 128*9; i++) pe[128 + i] = pe_q(wbuf[i]);       // weight[128*9]
+        if (pe_sat) printf("[pe] warning: region %d: %d values out of int16 range at scale %d -> saturated\n", r, pe_sat, PE_GMEM_SCALE);
         printf("pe weight region %d → data[GMEM_T#%u] (%d int16 @scale %d)\n", r, (unsigned)PE_REGION_OFF(r), 128 + 128*9, PE_GMEM_SCALE);
       } else printf("pe weight region %d read short (nw=%zu nb=%zu)\n", r, nw, nb);
-    } else if (r == 0) printf("pe weight region 0 file open fail (w_psa_pe_{weight,bias}.bin)\n");
+    } else printf("[pe] warning: region %d not loaded (%s / %s missing) -> PSA positional term is zero\n", r, wn, bn);
     if (fw) fclose(fw); if (fb) fclose(fb);
   }
 

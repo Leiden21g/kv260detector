@@ -7,6 +7,8 @@ camera video is run through **YOLO26n (640×640) on the PL (FPGA)**, detection b
 **H.264 by the VCU**, sent out over RTSP, and delivered to browsers (WebRTC / HLS) via MediaMTX. The weights are Ultralytics
 YOLO26n quantized for this PL (`n.q`). The end state is live video with the detection overlay (about 9.5 fps) visible in a browser
 at `http://<board>:8889/detect` (`doc/setup.en.md`).
+Accuracy on the first 50 images of COCO val2017: mAP@.5:.95 **0.4474** / mAP@.5 0.6108 (detection-head output from the
+board; float YOLO26n at 640×640 scores 0.4577 / 0.6241 on the same 50 images).
 
 ```
 camera (AP1302) → capture_daemon → camera_preprocess → PL inference (YOLO26n) → detection overlay
@@ -52,10 +54,10 @@ Regenerating the PL (bit / xclbin) and `n.q` is out of scope for this repo.
 
 The bundle deployed to the board is **not included in the repo**. It is packed into a single `.tar.gz` and distributed as a
 GitHub Release asset
-(published in Release v1.0: https://github.com/Leiden21g/kv260detector/releases/tag/v1.0 ; download and sha256 check in [doc/setup.en.md](doc/setup.en.md) §3-0).
+(latest: Release v1.1: https://github.com/Leiden21g/kv260detector/releases/tag/v1.1 ; download and sha256 check in [doc/setup.en.md](doc/setup.en.md) §3-0).
 
 - The file name is `y7-public-<tag>.tar.gz`. `<tag>` is the **first 8 hex digits of the xclbin md5** of the adopted build
-  (the build covered by this document is xclbin `14279337` = `y7-public-14279337.tar.gz`).
+  (the build covered by this document is xclbin `14279337` + n.q `2c6a15bc` = `y7-public-14279337-2c6a15bc.tar.gz`).
 - Contents: the deployed binaries (`firmware/` = bit / xclbin / `al5e*.fw` / dtbo, `home/` = launcher, `allegro_dvt.ko`,
   `vcu_stream`, inference host ELF, `n.q` / `x.bin`, `fan/` = fan control unit) + deployment script **`install.sh`** +
   bundled **`README.md`** (contents, install locations, version consistency) + **`MD5SUMS.txt`** + **`LICENSE`** + **`THIRD_PARTY_NOTICES.md`** +

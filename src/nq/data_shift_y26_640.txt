@@ -5,7 +5,7 @@ model.1 1 0
 model.10.cv1 3 3
 model.10.cv2 3 3
 model.10.m.0.attn.pe 3 4
-model.10.m.0.attn.proj 5 4
+model.10.m.0.attn.proj 5 3
 model.10.m.0.attn.qkv 3 3
 model.10.m.0.ffn.0 3 4
 model.10.m.0.ffn.1 4 3
@@ -41,13 +41,13 @@ model.2.cv1 0 0
 model.2.cv2 0 2
 model.2.m.0.cv1 0 5
 model.2.m.0.cv2 5 0
-model.20 4 4
+model.20 4 3
 model.22.cv1 3 3
 model.22.cv2 3 3
 model.22.m.0.0.cv1 3 4
 model.22.m.0.0.cv2 4 3
 model.22.m.0.1.attn.pe 3 3
-model.22.m.0.1.attn.proj 4 4
+model.22.m.0.1.attn.proj 4 3
 model.22.m.0.1.attn.qkv 3 3
 model.22.m.0.1.ffn.0 3 2
 model.22.m.0.1.ffn.1 2 3

@@ -429,27 +429,27 @@ The bundle deployed to the board (binaries + launcher + fan control + `install.s
 It is distributed as a single `.tar.gz` **distribution archive** (a GitHub Release asset). Contents, install locations, and version consistency are described in
 **the `README.md` bundled in the archive**. Everything below is run from the PC (WSL).
 
-★Release page: https://github.com/Leiden21g/kv260detector/releases/tag/v1.0
+★Release page: https://github.com/Leiden21g/kv260detector/releases/tag/v1.1
 
 The distribution archive is named `y7-public-<tag>.tar.gz`. `<tag>` is the **first 8 hex digits of the xclbin md5** of the adopted build
-(the build covered by this document = xclbin `14279337` ⇒ `y7-public-14279337.tar.gz`).
+(the build covered by this document = xclbin `14279337` + n.q `2c6a15bc` ⇒ `y7-public-14279337-2c6a15bc.tar.gz`).
 Below, the extraction directory is written as `<pkg>` (extracting creates a directory of the same name from the tar).
 
 ### 3-0. Extract the distribution archive and fetch MediaMTX (first time only)
 
 ```bash
 # (a) get the asset and the sha256 listed with it from this repo's GitHub Release page, verify, and extract
-#     the asset is on the Release page https://github.com/Leiden21g/kv260detector/releases/tag/v1.0
-curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.0/y7-public-14279337.tar.gz
-sha256sum y7-public-14279337.tar.gz             # expected: ac50a6394f44f1fa9213170ede8badfbf1ee965dda4d136815069d1737229d85
-tar -xzf y7-public-14279337.tar.gz              # → y7-public-14279337/ (= <pkg> below)
+#     the asset is on the Release page https://github.com/Leiden21g/kv260detector/releases/tag/v1.1
+curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.1/y7-public-14279337-2c6a15bc.tar.gz
+sha256sum y7-public-14279337-2c6a15bc.tar.gz             # expected: d6465f4941f5ffe3043d3cace026a5fb221ee849e6c25b3406f67333186b8b00
+tar -xzf y7-public-14279337-2c6a15bc.tar.gz              # → y7-public-14279337-2c6a15bc/ (= <pkg> below)
 ```
 
 The same Release also carries the **Corresponding Source** for the bundled `allegro_dvt.ko` (GPL-2.0) as an asset
 (not needed for deployment; fetch it only when you need the source. Details = `<pkg>/src/allegro-dvt/README.md`):
 
 ```bash
-curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.0/allegro-dvt-gpl-src-31626ef92ff1.tar.gz
+curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.1/allegro-dvt-gpl-src-31626ef92ff1.tar.gz
 sha256sum allegro-dvt-gpl-src-31626ef92ff1.tar.gz   # expected: eb1248ab86f9b940e6482d1af9000dcebcfb1a741b62d4739a5a2c457eee46cb
 ```
 
@@ -551,7 +551,7 @@ ssh <user>@<board> 'cd ~/yolov7 && mkdir -p /tmp/cg && rm -f /tmp/cg/o*_L* &&
   timeout 120 ./yolov7_host_overlap_camlive_geo640x640 ./data26_640 0 155 >/tmp/cg/run.log 2>&1; echo "rc=$?";
   for L in 131 136 140 145 149 154; do printf "%s " $(md5sum /tmp/cg/o_L$L.bin 2>/dev/null|cut -c1-8); done; echo;
   grep -a TIMING /tmp/cg/run.log | tail -1'
-# expected: rc=0 / GOLD = d5053fa6 d4f8cc60 de3383a1 1c5155a5 13a60293 f30905c4 / TIMING N=2 ≈ 139-140 ms/img
+# expected: rc=0 / GOLD = 0cd128f1 ec9ef88d 4b33a187 28ec7e43 9bf53b2a ef000a69 / TIMING N=2 ≈ 139-140 ms/img
 #       (measured on a pristine SD on 2026-09-12: GOLD 6/6 match, 140.00 ms/img)
 ```
 
@@ -664,6 +664,6 @@ export SDK=<SDK 展開先>      # directory extracted with sdk.sh -y -d <SDK 展
   (the timestamp embedded in the inference host's build_id is pinned with `SOURCE_DATE_EPOCH`).
 ★2026-09-10: the inference host was simplified to be streaming-only (2 files, `live/inference_host/src/y26_live.cpp` +
 `include/y26_live.h`; no Vitis includes needed). Confirmed canary GOLD 6/6 byte-exact match on the board.
-The ELF bundled in the distribution archive (Release v1.0) is the simplified build `3f586c9d` built from this public source (identical to the expected value in `live/MD5SUMS.expect.txt`).
+The ELF bundled in the distribution archive (Release v1.1) is the simplified build `5446141e` (v1.0: `3f586c9d`) built from this public source (identical to the expected value in `live/MD5SUMS.expect.txt`).
 Distributions and deployments before 2026-09-12 used `c6b433a0`, built from the pre-simplification source (inference results are identical = canary GOLD 6/6 match).
 Regenerating the PL (xclbin/bit) and n.q is out of scope for this release (requires Vitis 2025.2 and the cap platform).

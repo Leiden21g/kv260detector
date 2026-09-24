@@ -7,6 +7,8 @@ AMD Kria **KV260** Starter Kit と AP1302 カメラモジュール(KV260 付属 
 RTSP で出し、MediaMTX 経由でブラウザ(WebRTC / HLS)へ配信する一式。重みは Ultralytics の YOLO26n を
 本 PL 向けに量子化したもの(`n.q`)。到達点はブラウザで `http://<board>:8889/detect` に検出オーバレイ付きの
 ライブ映像(約 9.5 fps)が見える状態(`doc/setup.md`)。
+精度は COCO val2017 先頭 50 枚で mAP@.5:.95 **0.4474** / mAP@.5 0.6108(実機の検出ヘッド出力。同じ 50 枚で
+float の YOLO26n 640×640 は 0.4577 / 0.6241)。
 
 ```
 カメラ(AP1302)→ capture_daemon → camera_preprocess → PL 推論(YOLO26n)→ 検出 overlay
@@ -51,10 +53,10 @@ PL(bit / xclbin)と `n.q` の再生成は本 repo の範囲外。
 ## 配布物(board へ配置する一式)
 
 board へ配置する一式は **repo に含めない**。`.tar.gz` 1 本にまとめ、GitHub Release の asset として配っている
-(Release v1.0 で公開済み: https://github.com/Leiden21g/kv260detector/releases/tag/v1.0 。取得と sha256 照合は [doc/setup.md](doc/setup.md) §3-0)。
+(最新は Release v1.1: https://github.com/Leiden21g/kv260detector/releases/tag/v1.1 。取得と sha256 照合は [doc/setup.md](doc/setup.md) §3-0)。
 
 - ファイル名は `y7-public-<tag>.tar.gz`。`<tag>` には採用ビルドの **xclbin の md5 先頭 8 桁**が入る
-  (本書が対象とする採用ビルドは xclbin `14279337` = `y7-public-14279337.tar.gz`)。
+  (本書が対象とする採用ビルドは xclbin `14279337` + n.q `2c6a15bc` = `y7-public-14279337-2c6a15bc.tar.gz`)。
 - 中身: 配置バイナリ一式(`firmware/` = bit / xclbin / `al5e*.fw` / dtbo、`home/` = launcher・`allegro_dvt.ko`・
   `vcu_stream`・推論 host ELF・`n.q` / `x.bin`、`fan/` = fan 制御 unit)+ 配置スクリプト **`install.sh`** +
   同梱 **`README.md`**(中身・配置先・版の整合)+ **`MD5SUMS.txt`** + **`LICENSE`** + **`THIRD_PARTY_NOTICES.md`** +

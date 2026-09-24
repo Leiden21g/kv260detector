@@ -427,27 +427,27 @@ board へ配置する一式(バイナリ + launcher + fan 制御 + `install.sh`)
 `.tar.gz` 1 本の**配布アーカイブ**(GitHub Release の asset)として配る。中身・配置先・版の整合は
 **アーカイブ同梱の `README.md`** にある。以下は PC(WSL)から実行する。
 
-★Release ページ: https://github.com/Leiden21g/kv260detector/releases/tag/v1.0
+★Release ページ: https://github.com/Leiden21g/kv260detector/releases/tag/v1.1
 
 配布アーカイブの名前は `y7-public-<tag>.tar.gz`。`<tag>` には採用ビルドの **xclbin の md5 先頭 8 桁**が入る
-(本書が対象とする採用ビルド = xclbin `14279337` ⇒ `y7-public-14279337.tar.gz`)。
+(本書が対象とする採用ビルド = xclbin `14279337` + n.q `2c6a15bc` ⇒ `y7-public-14279337-2c6a15bc.tar.gz`)。
 以下では展開先を `<pkg>` と書く(展開すると tar の中に同名の dir ができる)。
 
 ### 3-0. 配布アーカイブを展開し、MediaMTX を取得して置く(初回のみ)
 
 ```bash
 # (a) 本 repo の GitHub Release ページから asset と、併記の sha256 を取得して照合し、展開する
-#     asset は Release ページ https://github.com/Leiden21g/kv260detector/releases/tag/v1.0 にある
-curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.0/y7-public-14279337.tar.gz
-sha256sum y7-public-14279337.tar.gz             # 期待: ac50a6394f44f1fa9213170ede8badfbf1ee965dda4d136815069d1737229d85
-tar -xzf y7-public-14279337.tar.gz              # → y7-public-14279337/ (= 以下の <pkg>)
+#     asset は Release ページ https://github.com/Leiden21g/kv260detector/releases/tag/v1.1 にある
+curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.1/y7-public-14279337-2c6a15bc.tar.gz
+sha256sum y7-public-14279337-2c6a15bc.tar.gz             # 期待: d6465f4941f5ffe3043d3cace026a5fb221ee849e6c25b3406f67333186b8b00
+tar -xzf y7-public-14279337-2c6a15bc.tar.gz              # → y7-public-14279337-2c6a15bc/ (= 以下の <pkg>)
 ```
 
 同じ Release には、同梱する `allegro_dvt.ko`(GPL-2.0)の**対応ソース**も asset として置いてある
 (配置には不要。ソースが要るときだけ取得する。詳細 = `<pkg>/src/allegro-dvt/README.md`):
 
 ```bash
-curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.0/allegro-dvt-gpl-src-31626ef92ff1.tar.gz
+curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.1/allegro-dvt-gpl-src-31626ef92ff1.tar.gz
 sha256sum allegro-dvt-gpl-src-31626ef92ff1.tar.gz   # 期待: eb1248ab86f9b940e6482d1af9000dcebcfb1a741b62d4739a5a2c457eee46cb
 ```
 
@@ -549,7 +549,7 @@ ssh <user>@<board> 'cd ~/yolov7 && mkdir -p /tmp/cg && rm -f /tmp/cg/o*_L* &&
   timeout 120 ./yolov7_host_overlap_camlive_geo640x640 ./data26_640 0 155 >/tmp/cg/run.log 2>&1; echo "rc=$?";
   for L in 131 136 140 145 149 154; do printf "%s " $(md5sum /tmp/cg/o_L$L.bin 2>/dev/null|cut -c1-8); done; echo;
   grep -a TIMING /tmp/cg/run.log | tail -1'
-# 期待: rc=0 / GOLD = d5053fa6 d4f8cc60 de3383a1 1c5155a5 13a60293 f30905c4 / TIMING N=2 ≈ 139-140 ms/img
+# 期待: rc=0 / GOLD = 0cd128f1 ec9ef88d 4b33a187 28ec7e43 9bf53b2a ef000a69 / TIMING N=2 ≈ 139-140 ms/img
 #       (2026-09-12 の素の SD での実測: GOLD 6/6 一致、140.00 ms/img)
 ```
 
@@ -662,6 +662,6 @@ export SDK=<SDK 展開先>      # sdk.sh -y -d <SDK 展開先> -p で展開し�
   (推論 host の build_id に入る日時は `SOURCE_DATE_EPOCH` で固定している)。
 ★2026-09-10: 推論 host は Web 配信専用へ簡素化した(`live/inference_host/src/y26_live.cpp` +
 `include/y26_live.h` の 2 ファイル、Vitis include 不要)。board で canary GOLD 6/6 byte-exact 一致を確認済。
-配布アーカイブ(Release v1.0)同梱の ELF は、この公開ソースからビルドした簡素化版 `3f586c9d`(`live/MD5SUMS.expect.txt` の期待値と同一)。
+配布アーカイブ(Release v1.1)同梱の ELF は、この公開ソースからビルドした簡素化版 `5446141e`(v1.0 は `3f586c9d`)(`live/MD5SUMS.expect.txt` の期待値と同一)。
 2026-09-12 以前の配布物・配備品は簡素化前のソース由来の `c6b433a0` だった(推論結果は同一 = canary GOLD 6/6 一致)。
 PL(xclbin/bit)と n.q の再生成は本公開物の範囲外(Vitis 2025.2 と cap platform が要る)。

@@ -11,7 +11,7 @@
 #                        再現できなかった。本動的版(76,680B)へ board を寄せて再現可能にした。
 #                        live 実測 9.92〜9.95fps / canary GOLD 6/6 / HLS セグメント更新を確認済。
 #                        board 上の退避 = ~/vcu_stream.bak_static_20260910(削除するな)。
-#   推論 host         = ★2026-09-12 以降の配布物は **この期待値(3f586c9d)の ELF** を同梱する
+#   推論 host         = ★配布物は **この期待値の ELF** を同梱する(v1.1 = 5446141e。v1.0 = 3f586c9d)
 #                        (release 生成時に本 dir のビルド結果を差し込む = AGPL 対応ソースと配布
 #                         バイナリを一致させるため。`scripts/package_public_release.sh` §4c)。
 #                        それ以前の配布/board 配備 ELF は簡素化前ソース由来の c6b433a0 だった。
@@ -21,4 +21,4 @@
 7a323056f59ccbf2a9b4533818ba0fa7  capture_daemon                              # = board 配備品
 b2a09f41221463c8a6111cb4b6f5860d  camera_preprocess                           # = board 配備品
 01c52c91dbe230c8e1d68aa0f0fc9b2f  vcu_stream                                  # = board 配備品(2026-09-10 差替)
-3f586c9dea5d54435bc9214b26642886  yolov7_host_overlap_camlive_geo640x640_ovl  # 簡素化 host = 配布物に同梱する版
+5446141e498174271d65d246eac2107e  yolov7_host_overlap_camlive_geo640x640_ovl  # 簡素化 host = 配布物に同梱する版(v1.1)

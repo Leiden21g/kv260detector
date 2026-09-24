@@ -57,7 +57,7 @@
   ことにした = [src/nq/](src/nq/)(生成器の全ソース + 量子化 sidecar `data_shift_y26_640.txt`)。
   HLS kernel ソースは含まない(§4 のとおり bit/xclbin は AGPL 対象外)。依存は C++17 のみで、torch / ultralytics /
   OpenCV / OpenCL は不要。**確認済**: クリーンな環境で cmake ビルド → 実行し、配布 `n.q`
-  (md5 `3a83aeb5d10ec13130998904dfee7732`、5,506,816 バイト)を `cmp` 差分 0 = **byte-exact に再生成できる**
+  (v1.1: md5 `2c6a15bc77fe1a6471c382c83a3e6377`、5,506,816 バイト。v1.0 は `3a83aeb5d10ec13130998904dfee7732`)を `cmp` 差分 0 = **byte-exact に再生成できる**
   (再現条件と手順は [src/nq/README.md](src/nq/README.md))。
   ★sidecar `data_shift_y26_640.txt` 自体を作り直すキャリブレーション Python(torch + ultralytics 必要)は
   同梱していない。sidecar はその出力として固定入力の形で同梱してある。
@@ -471,7 +471,7 @@ bit/xclbin には、AMD(Xilinx)がツールに同梱して提供する IP core �
    ★この項目に書いていた「ソースが本 repo に無い」は**誤り**だった(最初から `scripts/fan_platform/` に存在した)。
    残るのは、元にした AMD ツール生成 DT の法的評価(§5 の最終項)だけ。
 5. ~~配布する推論 host ELF(`c6b433a0`)が公開ソースからビルドできない~~ → ★**解決済(2026-09-12)**:
-   **配布物の推論 host ELF を公開ソース版 `3f586c9d` に統一した**。本 repo の `live/inference_host/`
+   **配布物の推論 host ELF を公開ソース版に統一した**(v1.0 = `3f586c9d`、v1.1 = `5446141e`)。本 repo の `live/inference_host/`
    (簡素化版)を `SOURCE_DATE_EPOCH` pin でビルドすると **byte 再現する**ことを実測で確認し
    (`live/MD5SUMS.expect.txt` / `y26_live_recipe.env` の `EXPECT_HOST_ELF_MD5`)、release 生成時に
    その実体を差し込む(`scripts/package_public_release.sh` §4c)。期待値と違う ELF を差し込もうとすると

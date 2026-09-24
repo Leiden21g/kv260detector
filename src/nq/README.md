@@ -6,7 +6,7 @@ blob loaded by this project's FPGA accelerator. `n.q` is a derivative work of AG
 tool is shipped as its **Corresponding Source**. It needs only a C++17 compiler and CMake — no PyTorch,
 no ultralytics, no OpenCV, no OpenCL, and none of the HLS kernel sources. With the bundled sidecar
 `data_shift_y26_640.txt` it reproduces the distributed `n.q` **byte-for-byte**
-(md5 `3a83aeb5d10ec13130998904dfee7732`). Build and run: see "ビルド" / "実行" below.
+(md5 `2c6a15bc77fe1a6471c382c83a3e6377`). Build and run: see "ビルド" / "実行" below.
 
 ---
 
@@ -40,7 +40,7 @@ no ultralytics, no OpenCV, no OpenCL, and none of the HLS kernel sources. With t
 | `src/nq_support.cpp` | 生成器が参照する最小の外部シンボル(割当状態・既定 `data_shift` 表・`file_save`) |
 | `include/nq_defs.h` | 型と定数(`struct Layer` / `LayerType` / メモリマップ / `NqConfig` / `FP8` / bump allocator / `relayout_liveness`) |
 | `include/pt_reader.h`, `include/pt_format.h` | `.pt` パーサの API と pickle/ZIP 形式の定義 |
-| `data_shift_y26_640.txt` | **sidecar**(量子化シフト表)。640×640 用の正本、md5 `8c41789e6349ef3c2806157f2bfefb6d` |
+| `data_shift_y26_640.txt` | **sidecar**(量子化シフト表)。640×640 用の正本、md5 `7dd0b4451f9f9a647d94d55a382da583` |
 | `CMakeLists.txt` | 生成器だけをビルドする独立 target |
 
 `include/nq_defs.h` は、本プロジェクト内部で HLS kernel と host が共用する巨大ヘッダから
@@ -79,7 +79,7 @@ env WEIGHT_K3_INT8=0 \
     ./build/nq --pt work/yolo26n.pt --gen work/n.q
 
 md5sum work/n.q
-# 3a83aeb5d10ec13130998904dfee7732     ← 配布 n.q と byte 一致
+# 2c6a15bc77fe1a6471c382c83a3e6377     ← 配布 n.q と byte 一致
 ```
 
 その他のモード:
@@ -97,14 +97,14 @@ md5sum work/n.q
 
 | # | 条件 | 値 |
 |---|---|---|
-| ① | sidecar が正本 | `data_shift_y26_640.txt` = md5 `8c41789e6349ef3c2806157f2bfefb6d`。`.pt` と同じ dir に `data_shift_y26.txt` として置く |
+| ① | sidecar が正本 | `data_shift_y26_640.txt` = md5 `7dd0b4451f9f9a647d94d55a382da583`。`.pt` と同じ dir に `data_shift_y26.txt` として置く |
 | ② | ビルド定義 | 上記「ビルド」の `-D` 群(`Y26_NETH/NETW=640u`、`GMEM_DATA64_SIZE_MB=512`、`HEAD_RESERVE_FRONT`、`HB_TOP_WORDS=524288u`、`BATCH_IN_BASE=278528`、`BATCH_OUT_BASE=432128`、`MGR_CYC_BASE=456704`) |
 | ③ | 量子化 | `WEIGHT_K3_INT8=0`(全層 int16) |
 | ④ | head pin | `MAP_PIN_HEADS=131,136,140,145,149,154` + `MAP_PIN_HEADS_BASE=457216`。**列挙順(昇順)が配置を決める** |
 
 `RELAYOUT_SELFCHECK=1` / `OVERREAD_CHECK=1` は配置の自己検証で、出力バイトには影響しない。
 
-期待値: **md5 `3a83aeb5d10ec13130998904dfee7732`**(5,506,816 バイト)。
+期待値: **md5 `2c6a15bc77fe1a6471c382c83a3e6377`**(5,506,816 バイト)。
 
 ★④ を付けた構成では生成ログに
 
@@ -116,6 +116,12 @@ md5sum work/n.q
 この配置を前提にした推論 host とセットで採用している(配布物がこの組み合わせ)。
 
 ## sidecar(`data_shift_y26_640.txt`)について
+
+★**v1.1(2026-09-24)で sidecar を修正した**。v1.0 の sidecar(md5 `8c41789e…`、n.q `3a83aeb5…`)は
+`model.10.m.0.attn.proj` / `model.20` / `model.22.m.0.1.attn.proj` の zout が 4 で、残差 Add / Concat の
+相手(zout 3)と固定小数の形式が食い違っていた。PL の Add / Concat はスケールを揃えずに結合するため、
+片側が 2 倍 / 1/2 で混ざり、COCO val2017 先頭 50 枚の mAP@.5:.95 が 0.3760 に落ちていた(float 0.4577)。
+3 値を zout 3 にした現 sidecar で 0.4474(実機)。
 
 sidecar は各 conv 路の固定小数シフト(`zoomin` / `zoomout`)表で、**キャリブレーション用画像集合**から
 算出したものである。**同梱の sidecar を使う限り、`n.q` の再現は C++ だけで完結する**。
