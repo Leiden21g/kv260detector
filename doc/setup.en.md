@@ -25,6 +25,7 @@ Use AMD's officially distributed **generic Kria Starter Kit embedded Linux 2025.
 Scope of verification: on **2026-09-12, §1 through §3 were run end-to-end on real hardware, starting from a pristine official SD**
 (freshly written with the wic above). The end state reached was **a running web stream** — canary GOLD 6/6 match (**140.00 ms/img**),
 live run1 at 2000 images / 206 s = **9.71 fps**, all 8 units `active`, HTTP 200 on `:8889` and `:8890`, and vcu_stream sent 1600 frames.
+(These numbers are for the PL of that time (v1.0/v1.1). With the Release v1.2 PL, canary TIMING ≈ 123-124 ms/img and live inference ≈ 11.7 fps — §3-3 / §3-5.)
 
 Gaps found during that run have been folded into this document (rootfs expansion = §2 step 3, `v4l-utils` = §2-1,
 camera firmware = §2-2, removing the old host key = §2 step 5, how to apply NOPASSWD = §2 step 6).
@@ -429,27 +430,28 @@ The bundle deployed to the board (binaries + launcher + fan control + `install.s
 It is distributed as a single `.tar.gz` **distribution archive** (a GitHub Release asset). Contents, install locations, and version consistency are described in
 **the `README.md` bundled in the archive**. Everything below is run from the PC (WSL).
 
-★Release page: https://github.com/Leiden21g/kv260detector/releases/tag/v1.1
+★Release page: https://github.com/Leiden21g/kv260detector/releases/tag/v1.2
 
 The distribution archive is named `y7-public-<tag>.tar.gz`. `<tag>` is the **first 8 hex digits of the xclbin md5** of the adopted build
-(the build covered by this document = xclbin `14279337` + n.q `2c6a15bc` ⇒ `y7-public-14279337-2c6a15bc.tar.gz`).
+(the build covered by this document = xclbin `f04a647f` + n.q `2c6a15bc` ⇒ `y7-public-f04a647f-2c6a15bc.tar.gz`).
+★The v1.2 PL is **int16-only**: it cannot compute an `n.q` that contains int8 Conv layers (the distributed `n.q` is int16 in every layer, so it is fine).
 Below, the extraction directory is written as `<pkg>` (extracting creates a directory of the same name from the tar).
 
 ### 3-0. Extract the distribution archive and fetch MediaMTX (first time only)
 
 ```bash
 # (a) get the asset and the sha256 listed with it from this repo's GitHub Release page, verify, and extract
-#     the asset is on the Release page https://github.com/Leiden21g/kv260detector/releases/tag/v1.1
-curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.1/y7-public-14279337-2c6a15bc.tar.gz
-sha256sum y7-public-14279337-2c6a15bc.tar.gz             # expected: d6465f4941f5ffe3043d3cace026a5fb221ee849e6c25b3406f67333186b8b00
-tar -xzf y7-public-14279337-2c6a15bc.tar.gz              # → y7-public-14279337-2c6a15bc/ (= <pkg> below)
+#     the asset is on the Release page https://github.com/Leiden21g/kv260detector/releases/tag/v1.2
+curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.2/y7-public-f04a647f-2c6a15bc.tar.gz
+sha256sum y7-public-f04a647f-2c6a15bc.tar.gz             # expected: 0e0ad4d38564be70e56c3408d1119b1178df9db44171e6bd689506fa9a1acefa
+tar -xzf y7-public-f04a647f-2c6a15bc.tar.gz              # → y7-public-f04a647f-2c6a15bc/ (= <pkg> below)
 ```
 
 The same Release also carries the **Corresponding Source** for the bundled `allegro_dvt.ko` (GPL-2.0) as an asset
 (not needed for deployment; fetch it only when you need the source. Details = `<pkg>/src/allegro-dvt/README.md`):
 
 ```bash
-curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.1/allegro-dvt-gpl-src-31626ef92ff1.tar.gz
+curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.2/allegro-dvt-gpl-src-31626ef92ff1.tar.gz
 sha256sum allegro-dvt-gpl-src-31626ef92ff1.tar.gz   # expected: eb1248ab86f9b940e6482d1af9000dcebcfb1a741b62d4739a5a2c457eee46cb
 ```
 
@@ -551,8 +553,8 @@ ssh <user>@<board> 'cd ~/yolov7 && mkdir -p /tmp/cg && rm -f /tmp/cg/o*_L* &&
   timeout 120 ./yolov7_host_overlap_camlive_geo640x640 ./data26_640 0 155 >/tmp/cg/run.log 2>&1; echo "rc=$?";
   for L in 131 136 140 145 149 154; do printf "%s " $(md5sum /tmp/cg/o_L$L.bin 2>/dev/null|cut -c1-8); done; echo;
   grep -a TIMING /tmp/cg/run.log | tail -1'
-# expected: rc=0 / GOLD = 0cd128f1 ec9ef88d 4b33a187 28ec7e43 9bf53b2a ef000a69 / TIMING N=2 ≈ 139-140 ms/img
-#       (measured on a pristine SD on 2026-09-12: GOLD 6/6 match, 140.00 ms/img)
+# expected: rc=0 / GOLD = 0cd128f1 ec9ef88d 4b33a187 28ec7e43 9bf53b2a ef000a69 / TIMING N=2 ≈ 123-124 ms/img
+#       (measured with the v1.2 PL on 2026-10-02: GOLD 6/6 match, 123.57 ms/img; ≈ 139-140 ms/img with the PL up to v1.1)
 ```
 
 - If no head is dumped at all + exit 134, the PL is not programmed (§3-2 was skipped). This is not a CU fault.
@@ -594,7 +596,8 @@ curl -s -o /dev/null -w "web=%{http_code}\n" http://<board>:8890/
 ```
 
 - Pass = all 8 units `active`, and the frames count in yololoop's `run N t=… frames=…` is increasing
-  (measured on a pristine SD on 2026-09-12: run1 at 2000 images / 206 s = **9.71 fps**, vcu_stream sent 1600 frames, HTTP 200 on both `:8889` and `:8890`).
+  (measured on a pristine SD on 2026-09-12: run1 at 2000 images / 206 s = **9.71 fps**, vcu_stream sent 1600 frames, HTTP 200 on both `:8889` and `:8890`;
+  with the v1.2 PL, 2000 images / about 175 s = about 11.7 fps inference).
 - "HTTP 200 but the picture is frozen" is a half-stopped state where only yololoop died. Always judge by whether `yololoop` is alive and frames are increasing.
 
 ### 3-6. Stopping (always via the stop flag)
@@ -664,6 +667,6 @@ export SDK=<SDK 展開先>      # directory extracted with sdk.sh -y -d <SDK 展
   (the timestamp embedded in the inference host's build_id is pinned with `SOURCE_DATE_EPOCH`).
 ★2026-09-10: the inference host was simplified to be streaming-only (2 files, `live/inference_host/src/y26_live.cpp` +
 `include/y26_live.h`; no Vitis includes needed). Confirmed canary GOLD 6/6 byte-exact match on the board.
-The ELF bundled in the distribution archive (Release v1.1) is the simplified build `5446141e` (v1.0: `3f586c9d`) built from this public source (identical to the expected value in `live/MD5SUMS.expect.txt`).
+The ELF bundled in the distribution archive (Release v1.1 / v1.2) is the simplified build `5446141e` (v1.0: `3f586c9d`) built from this public source (identical to the expected value in `live/MD5SUMS.expect.txt`).
 Distributions and deployments before 2026-09-12 used `c6b433a0`, built from the pre-simplification source (inference results are identical = canary GOLD 6/6 match).
 Regenerating the PL (xclbin/bit) and n.q is out of scope for this release (requires Vitis 2025.2 and the cap platform).

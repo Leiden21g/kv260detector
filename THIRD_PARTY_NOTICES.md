@@ -184,7 +184,8 @@
 
 ## 4. PL bitstream / xclbin(Vitis / Vivado の生成物)
 
-- 対象: `firmware/kv260_fan_vcu.bit.bin`(bit 8ec4bc3b)/ `firmware/xilinx/yolov7/binary_container_1.bin`(xclbin 14279337)。
+- 対象: `firmware/kv260_fan_vcu.bit.bin`(bit cfe983b2)/ `firmware/xilinx/yolov7/binary_container_1.bin`(xclbin f04a647f)。
+  (Release v1.2。v1.0 / v1.1 は bit 8ec4bc3b / xclbin 14279337。v1.2 の PL は int16 専用で、推論 kernel の構成以外の IP 構成は同じ)
 - 中身: 自作の HLS 推論 kernel(Vitis HLS 2025.2 で合成)と、AMD(Xilinx)の IP / platform を Vivado で統合した生成物。
   PL overlay(§5)から読み取れる範囲では、少なくとも VCU(`xlnx,vcu-1.2`)、MIPI CSI-2 RX Subsystem、Video Frame Buffer Write、
   AXI IIC、AXI Interrupt Controller、AXI4-Stream FIFO、および XRT(zocl)用の platform 部分を含む。
@@ -471,7 +472,7 @@ bit/xclbin には、AMD(Xilinx)がツールに同梱して提供する IP core �
    ★この項目に書いていた「ソースが本 repo に無い」は**誤り**だった(最初から `scripts/fan_platform/` に存在した)。
    残るのは、元にした AMD ツール生成 DT の法的評価(§5 の最終項)だけ。
 5. ~~配布する推論 host ELF(`c6b433a0`)が公開ソースからビルドできない~~ → ★**解決済(2026-09-12)**:
-   **配布物の推論 host ELF を公開ソース版に統一した**(v1.0 = `3f586c9d`、v1.1 = `5446141e`)。本 repo の `live/inference_host/`
+   **配布物の推論 host ELF を公開ソース版に統一した**(v1.0 = `3f586c9d`、v1.1 / v1.2 = `5446141e`)。本 repo の `live/inference_host/`
    (簡素化版)を `SOURCE_DATE_EPOCH` pin でビルドすると **byte 再現する**ことを実測で確認し
    (`live/MD5SUMS.expect.txt` / `y26_live_recipe.env` の `EXPECT_HOST_ELF_MD5`)、release 生成時に
    その実体を差し込む(`scripts/package_public_release.sh` §4c)。期待値と違う ELF を差し込もうとすると

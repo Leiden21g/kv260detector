@@ -25,6 +25,7 @@ AMD が公式に配布している **Kria 汎用 Starter Kit 組込み Linux 202
 確認の範囲: **2026-09-12 に、素の公式 SD**(上記 wic を焼いた直後のもの)で §1 から §3 まで**頭から通して実機確認した**。
 到達点は **Web 配信の稼働** — canary が GOLD 6/6 一致(**140.00 ms/img**)、live run1 が 2000 枚 / 206 s = **9.71 fps**、
 8 unit すべて `active`、`:8889` と `:8890` が HTTP 200、vcu_stream が 1600 frames 送出。
+(この数値は当時の PL(v1.0/v1.1)のもの。Release v1.2 の PL では canary TIMING ≈ 123-124 ms/img、live の推論 約 11.7 fps — §3-3 / §3-5)
 
 その通しで判明した手順の不足は本書に反映済み(rootfs の拡張 = §2 手順 3、`v4l-utils` = §2-1、
 カメラ firmware = §2-2、host 鍵の削除 = §2 手順 5、NOPASSWD の実行のしかた = §2 手順 6)。
@@ -427,27 +428,28 @@ board へ配置する一式(バイナリ + launcher + fan 制御 + `install.sh`)
 `.tar.gz` 1 本の**配布アーカイブ**(GitHub Release の asset)として配る。中身・配置先・版の整合は
 **アーカイブ同梱の `README.md`** にある。以下は PC(WSL)から実行する。
 
-★Release ページ: https://github.com/Leiden21g/kv260detector/releases/tag/v1.1
+★Release ページ: https://github.com/Leiden21g/kv260detector/releases/tag/v1.2
 
 配布アーカイブの名前は `y7-public-<tag>.tar.gz`。`<tag>` には採用ビルドの **xclbin の md5 先頭 8 桁**が入る
-(本書が対象とする採用ビルド = xclbin `14279337` + n.q `2c6a15bc` ⇒ `y7-public-14279337-2c6a15bc.tar.gz`)。
+(本書が対象とする採用ビルド = xclbin `f04a647f` + n.q `2c6a15bc` ⇒ `y7-public-f04a647f-2c6a15bc.tar.gz`)。
+★v1.2 の PL は **int16 専用**で、int8 の Conv 層を含む `n.q` は計算できない(配布 `n.q` は全層 int16 なので問題ない)。
 以下では展開先を `<pkg>` と書く(展開すると tar の中に同名の dir ができる)。
 
 ### 3-0. 配布アーカイブを展開し、MediaMTX を取得して置く(初回のみ)
 
 ```bash
 # (a) 本 repo の GitHub Release ページから asset と、併記の sha256 を取得して照合し、展開する
-#     asset は Release ページ https://github.com/Leiden21g/kv260detector/releases/tag/v1.1 にある
-curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.1/y7-public-14279337-2c6a15bc.tar.gz
-sha256sum y7-public-14279337-2c6a15bc.tar.gz             # 期待: d6465f4941f5ffe3043d3cace026a5fb221ee849e6c25b3406f67333186b8b00
-tar -xzf y7-public-14279337-2c6a15bc.tar.gz              # → y7-public-14279337-2c6a15bc/ (= 以下の <pkg>)
+#     asset は Release ページ https://github.com/Leiden21g/kv260detector/releases/tag/v1.2 にある
+curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.2/y7-public-f04a647f-2c6a15bc.tar.gz
+sha256sum y7-public-f04a647f-2c6a15bc.tar.gz             # 期待: 0e0ad4d38564be70e56c3408d1119b1178df9db44171e6bd689506fa9a1acefa
+tar -xzf y7-public-f04a647f-2c6a15bc.tar.gz              # → y7-public-f04a647f-2c6a15bc/ (= 以下の <pkg>)
 ```
 
 同じ Release には、同梱する `allegro_dvt.ko`(GPL-2.0)の**対応ソース**も asset として置いてある
 (配置には不要。ソースが要るときだけ取得する。詳細 = `<pkg>/src/allegro-dvt/README.md`):
 
 ```bash
-curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.1/allegro-dvt-gpl-src-31626ef92ff1.tar.gz
+curl -LO https://github.com/Leiden21g/kv260detector/releases/download/v1.2/allegro-dvt-gpl-src-31626ef92ff1.tar.gz
 sha256sum allegro-dvt-gpl-src-31626ef92ff1.tar.gz   # 期待: eb1248ab86f9b940e6482d1af9000dcebcfb1a741b62d4739a5a2c457eee46cb
 ```
 
@@ -549,8 +551,8 @@ ssh <user>@<board> 'cd ~/yolov7 && mkdir -p /tmp/cg && rm -f /tmp/cg/o*_L* &&
   timeout 120 ./yolov7_host_overlap_camlive_geo640x640 ./data26_640 0 155 >/tmp/cg/run.log 2>&1; echo "rc=$?";
   for L in 131 136 140 145 149 154; do printf "%s " $(md5sum /tmp/cg/o_L$L.bin 2>/dev/null|cut -c1-8); done; echo;
   grep -a TIMING /tmp/cg/run.log | tail -1'
-# 期待: rc=0 / GOLD = 0cd128f1 ec9ef88d 4b33a187 28ec7e43 9bf53b2a ef000a69 / TIMING N=2 ≈ 139-140 ms/img
-#       (2026-09-12 の素の SD での実測: GOLD 6/6 一致、140.00 ms/img)
+# 期待: rc=0 / GOLD = 0cd128f1 ec9ef88d 4b33a187 28ec7e43 9bf53b2a ef000a69 / TIMING N=2 ≈ 123-124 ms/img
+#       (2026-10-02 の v1.2 PL での実測: GOLD 6/6 一致、123.57 ms/img。v1.1 までの PL では ≈ 139-140 ms/img)
 ```
 
 - 全 head「dump 無し」+ exit 134 なら PL 未 program(§3-2 を飛ばしている)。CU 異常ではない。
@@ -592,7 +594,8 @@ curl -s -o /dev/null -w "web=%{http_code}\n" http://<board>:8890/
 ```
 
 - 合格 = 8 unit すべて `active`、かつ yololoop の `run N t=… frames=…` の frames が増えている
-  (2026-09-12 の素の SD での実測: run1 が 2000 枚 / 206 s = **9.71 fps**、vcu_stream 1600 frames 送出、`:8889`・`:8890` とも HTTP 200)。
+  (2026-09-12 の素の SD での実測: run1 が 2000 枚 / 206 s = **9.71 fps**、vcu_stream 1600 frames 送出、`:8889`・`:8890` とも HTTP 200。
+  v1.2 の PL では 2000 枚 / 約 175 s = 推論 約 11.7 fps)。
 - 「HTTP 200 だが画が止まっている」は yololoop だけ落ちた半停止。判定は必ず `yololoop` の生死と frames 増加で行う。
 
 ### 3-6. 停止(必ず stop フラグ経由)
@@ -662,6 +665,6 @@ export SDK=<SDK 展開先>      # sdk.sh -y -d <SDK 展開先> -p で展開し�
   (推論 host の build_id に入る日時は `SOURCE_DATE_EPOCH` で固定している)。
 ★2026-09-10: 推論 host は Web 配信専用へ簡素化した(`live/inference_host/src/y26_live.cpp` +
 `include/y26_live.h` の 2 ファイル、Vitis include 不要)。board で canary GOLD 6/6 byte-exact 一致を確認済。
-配布アーカイブ(Release v1.1)同梱の ELF は、この公開ソースからビルドした簡素化版 `5446141e`(v1.0 は `3f586c9d`)(`live/MD5SUMS.expect.txt` の期待値と同一)。
+配布アーカイブ(Release v1.1 / v1.2)同梱の ELF は、この公開ソースからビルドした簡素化版 `5446141e`(v1.0 は `3f586c9d`)(`live/MD5SUMS.expect.txt` の期待値と同一)。
 2026-09-12 以前の配布物・配備品は簡素化前のソース由来の `c6b433a0` だった(推論結果は同一 = canary GOLD 6/6 一致)。
 PL(xclbin/bit)と n.q の再生成は本公開物の範囲外(Vitis 2025.2 と cap platform が要る)。

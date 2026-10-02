@@ -5,8 +5,9 @@
 A complete setup for the AMD Kria **KV260** Starter Kit and the AP1302 camera module (the IAS module bundled with the KV260):
 camera video is run through **YOLO26n (640×640) on the PL (FPGA)**, detection boxes are overlaid, the result is encoded to
 **H.264 by the VCU**, sent out over RTSP, and delivered to browsers (WebRTC / HLS) via MediaMTX. The weights are Ultralytics
-YOLO26n quantized for this PL (`n.q`). The end state is live video with the detection overlay (about 9.5 fps) visible in a browser
-at `http://<board>:8889/detect` (`doc/setup.en.md`).
+YOLO26n quantized for this PL (`n.q`). The end state is live video with the detection overlay visible in a browser
+at `http://<board>:8889/detect` (`doc/setup.en.md`). PL inference takes about 85 ms per frame (about 11.7 fps inference with the
+Release v1.2 PL; about 9.9 fps up to v1.1).
 Accuracy on the first 50 images of COCO val2017: mAP@.5:.95 **0.4474** / mAP@.5 0.6108 (detection-head output from the
 board; float YOLO26n at 640×640 scores 0.4577 / 0.6241 on the same 50 images).
 
@@ -33,6 +34,8 @@ deployment script `install.sh`) is not in the repo; it is distributed separately
   The bundled `allegro_dvt.ko` is built for this kernel only (vermagic must match).
 - The PL (bit / xclbin), `n.q`, and the inference host must **match as a set** (no swapping individual pieces; see "版の整合"
   (version consistency) in the `README.md` bundled with the distribution archive).
+- ★The PL from Release v1.2 on (xclbin `f04a647f`) is **int16-only**: it **cannot compute an `n.q` that contains int8 Conv layers**.
+  The distributed `n.q` (`2c6a15bc`) is int16 in every layer, so it works as is. If you build your own `n.q`, keep every layer int16.
 
 ## Quick start
 
@@ -54,10 +57,10 @@ Regenerating the PL (bit / xclbin) and `n.q` is out of scope for this repo.
 
 The bundle deployed to the board is **not included in the repo**. It is packed into a single `.tar.gz` and distributed as a
 GitHub Release asset
-(latest: Release v1.1: https://github.com/Leiden21g/kv260detector/releases/tag/v1.1 ; download and sha256 check in [doc/setup.en.md](doc/setup.en.md) §3-0).
+(latest: Release v1.2: https://github.com/Leiden21g/kv260detector/releases/tag/v1.2 ; download and sha256 check in [doc/setup.en.md](doc/setup.en.md) §3-0).
 
 - The file name is `y7-public-<tag>.tar.gz`. `<tag>` is the **first 8 hex digits of the xclbin md5** of the adopted build
-  (the build covered by this document is xclbin `14279337` + n.q `2c6a15bc` = `y7-public-14279337-2c6a15bc.tar.gz`).
+  (the build covered by this document is xclbin `f04a647f` + n.q `2c6a15bc` = `y7-public-f04a647f-2c6a15bc.tar.gz`).
 - Contents: the deployed binaries (`firmware/` = bit / xclbin / `al5e*.fw` / dtbo, `home/` = launcher, `allegro_dvt.ko`,
   `vcu_stream`, inference host ELF, `n.q` / `x.bin`, `fan/` = fan control unit) + deployment script **`install.sh`** +
   bundled **`README.md`** (contents, install locations, version consistency) + **`MD5SUMS.txt`** + **`LICENSE`** + **`THIRD_PARTY_NOTICES.md`** +

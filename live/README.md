@@ -98,6 +98,11 @@ SDK=<SDK 展開先> bash build_live.sh all      # → out/(配信 3 本 + host)
 - ★2026-09-24(v1.1): 推論 host の PE 重み(PSA の位置項)を int16 へ詰める処理を**飽和**にした
   (旧版は範囲外の 2 値で符号が反転していた)。PE ファイルが無い region は警告を出す。配布 ELF = `5446141e`。
   同時に n.q を 2c6a15bc へ更新したので canary GOLD は `0cd128f1 ec9ef88d 4b33a187 28ec7e43 9bf53b2a ef000a69` に変わる。
+- ★2026-10-02(v1.2): 配布物の PL を xclbin `f04a647f` / bit `cfe983b2` に更新(推論 N=20 で 101.05 → 85.1 ms/img、
+  live の推論 約 9.9 → 11.7 fps。canary GOLD は不変)。推論 host は `5446141e` のまま(この PL で GOLD 一致を実機確認)。
+  ★この PL は **int16 専用**で、int8 の Conv 層を含む n.q は計算できない(配布 n.q 2c6a15bc は全層 int16)。
+  `capture_daemon` は行ステージング版 `c796d6cd`(本 dir のソースからのビルド。出力 byte は旧版と同一)を同梱し、
+  `geo640.env` の蓋を FPS 14 / capd 16 にした(capd の間引きは 30fps の整数分周なので 16 → 15fps)。
 - 本 dir から再ビルドした配信 3 本(`capture_daemon` 7a323056 / `camera_preprocess` b2a09f41 / `vcu_stream` 01c52c91)は
   **配備品と byte 一致**(2026-09-10 確認。期待 md5 と経緯は `MD5SUMS.expect.txt`。`vcu_stream` は同日に board 側を
   再現可能な動的リンク版へ差し替えて一致させた)。推論 host も 2026-09-12 に配布物側を本 dir の

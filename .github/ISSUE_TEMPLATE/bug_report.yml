@@ -52,8 +52,8 @@ body:
     id: release
     attributes:
       label: Distribution archive
-      description: File name and sha256 of the archive you deployed (e.g. y7-public-14279337.tar.gz / ac50a639...). Write "rebuilt from source" if applicable.
-      placeholder: "y7-public-14279337.tar.gz, sha256 ac50a639..."
+      description: File name and sha256 of the archive you deployed (e.g. y7-public-f04a647f-2c6a15bc.tar.gz / 1a2b3c4d...). Write "rebuilt from source" if applicable.
+      placeholder: "y7-public-f04a647f-2c6a15bc.tar.gz, sha256 1a2b3c4d..."
     validations:
       required: true
   - type: textarea
@@ -102,7 +102,7 @@ body:
     id: fps
     attributes:
       label: fps / timing
-      description: If relevant, the observed fps (live) and/or the canary TIMING line (ms/img). Expected ≈ 9.5 fps live, ≈ 140 ms/img canary.
+      description: If relevant, the observed fps (live) and/or the canary TIMING line (ms/img). Expected with Release v1.2 ≈ 11.7 fps live inference and ≈ 124 ms/img canary (v1.1 and earlier ≈ 9.9 fps and ≈ 140 ms/img).
   - type: textarea
     id: logs
     attributes:

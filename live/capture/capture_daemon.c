@@ -102,6 +102,8 @@ typedef struct {
     const char *mode_file; // wide|zoom
     uint16_t *cmap;        // wide 用 列 nearest map(Y: N 個 / UV: N 個(偶数化))
     uint8_t  *scratch;     // 非 ring 経路用の変換先
+    int      Q, qx0;       // wide の中央正方(幅 Q、左端 qx0)
+    uint8_t  *rowbuf;      // ★wide 行ステージング(2026-09-25): src 行 [qx0,qx0+Q) を cached メモリへ memcpy してから gather
 } pub_t;
 
 // mode file 書式: "wide" | "zoom" | "zoom <dx> <dy>"(dx/dy = 中央からの crop 原点オフセット px)
@@ -131,7 +133,9 @@ static int pub_init(pub_t *p, int N, int dstride, const char *mode_file, int sw,
     int qx0 = ((sw - Q) / 2) & ~1;
     p->cmap = malloc(sizeof(uint16_t) * N * 2);
     p->scratch = calloc(1, p->dbytes);
-    if (!p->cmap || !p->scratch){ fprintf(stderr, "[capd] pub: malloc 失敗 → pub 無効\n"); p->N = 0; return 0; }
+    p->Q = Q; p->qx0 = qx0;
+    p->rowbuf = malloc((size_t)Q + 64);
+    if (!p->cmap || !p->scratch || !p->rowbuf){ fprintf(stderr, "[capd] pub: malloc 失敗 → pub 無効\n"); p->N = 0; return 0; }
     for (int i = 0; i < N; i++){
         int sx = qx0 + (int)((long)i * Q / N);
         p->cmap[i]     = (uint16_t)sx;          // Y 列
@@ -163,15 +167,22 @@ static void pub_xform(const pub_t *p, const uint8_t *src, uint8_t *dst){
         const int Q = (p->sw < p->sh ? p->sw : p->sh) & ~1;
         const int qy0 = ((p->sh - Q) / 2) & ~1;
         const uint16_t *cy = p->cmap, *cuv = p->cmap + N;
+        // ★2026-09-25 行ステージング: V4L2 MMAP バッファ(非キャッシュ)からの 1 byte gather は
+        //   1 load ≈150ns × 614,400 回 ≈ 100ms/frame(実測 capd 97% CPU、zoom の memcpy は 5%)。
+        //   src 行の [qx0, qx0+Q) を rowbuf(cached)へ連続 memcpy してから gather する。
+        //   読む画素・nearest map は不変 = 出力 byte は旧実装と同一。
+        const int qx0 = p->qx0; uint8_t *rb = p->rowbuf;
         for (int r = 0; r < N; r++){
-            const uint8_t *s = src + (size_t)(qy0 + (int)((long)r * Q / N)) * SST;
+            const uint8_t *s = src + (size_t)(qy0 + (int)((long)r * Q / N)) * SST + qx0;
             uint8_t *d = dst + (size_t)r * DS;
-            for (int i = 0; i < N; i++) d[i] = s[cy[i]];
+            memcpy(rb, s, (size_t)Q);
+            for (int i = 0; i < N; i++) d[i] = rb[cy[i] - qx0];
         }
         for (int r = 0; r < N / 2; r++){
-            const uint8_t *s = suv + (size_t)(qy0 / 2 + (int)((long)r * Q / N)) * SST;
+            const uint8_t *s = suv + (size_t)(qy0 / 2 + (int)((long)r * Q / N)) * SST + qx0;
             uint8_t *d = duv + (size_t)r * DS;
-            for (int i = 0; i < N; i += 2){ int c = cuv[i]; d[i] = s[c]; d[i+1] = s[c+1]; }
+            memcpy(rb, s, (size_t)Q);
+            for (int i = 0; i < N; i += 2){ int c = cuv[i] - qx0; d[i] = rb[c]; d[i+1] = rb[c+1]; }
         }
     }
 }

@@ -103,7 +103,7 @@ else CAM_W="${CAM_W:-1280}"; CAM_H="${CAM_H:-720}"; fi
 CAPTURE_W=$CAM_W; CAPTURE_H=$CAM_H; CAPD_PUB_ARGS=""; WEBMODE_ENV=""
 if [ "${GEO640_CAPD_PUB:-0}" = 1 ] && [ "$Y26_NETH" = "$Y26_NETW" ]; then
   CAPTURE_W=3840; CAPTURE_H=2160
-  CAPD_PUB_ARGS="--pub-square $Y26_NETW --mode-file /tmp/lv/capmode"
+  CAPD_PUB_ARGS="--pub-square $Y26_NETW --pub-stride $Y26_NETW --mode-file /tmp/lv/capmode"
   WEBMODE_ENV="--setenv=CAPMODE=1 --setenv=CAPPAN_MAXX=$(( (CAPTURE_W - Y26_NETW) / 2 )) --setenv=CAPPAN_MAXY=$(( (CAPTURE_H - Y26_NETH) / 2 ))"
   # ★ここで WEBMODE_ENV を**上書き**するので、Y7_SOURCE_URL の追記はこの if の後で行う(下記)。
   mkdir -p /tmp/lv; [ -s /tmp/lv/capmode ] || echo wide > /tmp/lv/capmode
